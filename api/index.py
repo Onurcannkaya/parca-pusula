@@ -1,25 +1,16 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-import flet.fastapi as flet_fastapi
 import sys
 import os
 
-# Deterministic Path Resolution for Vercel
-# index.py is in 'api/', so '..' is the root where scraper.py and main.py live.
+# Deterministic Path Resolution
 current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.dirname(current_dir)
 if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
 
-try:
-    from scraper import ScraperEngine
-    from main import main as flet_main
-except ImportError as e:
-    print(f"[FATAL] Modül yükleme hatası: {e}")
-    # Re-raise to let Vercel capture the crash logs
-    raise e
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="ParçaPusula API", description="Serverless Fullstack Engine")
+app = FastAPI(title="ParçaPusula Fullstack")
 
 app.add_middleware(
     CORSMiddleware,
@@ -29,13 +20,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-engine = ScraperEngine()
+@app.get("/api/health")
+async def health_check():
+    return {"status": "ok", "engine": "FastAPI Serverless"}
 
 @app.get("/api/search")
 async def search_parts(q: str):
     if not q or len(q.strip()) < 2:
         raise HTTPException(status_code=400, detail="Arama terimi çok kısa.")
     try:
+        from scraper import ScraperEngine
+        engine = ScraperEngine()
         results = await engine.search_all(q.strip())
         return {
             "query": q,
@@ -55,11 +50,12 @@ async def search_parts(q: str):
             ]
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/api/health")
-async def health_check():
-    return {"status": "ok", "app": "ParcaPusula Fullstack Engine"}
+        return {"error": str(e), "success": False}
 
 # ── Flet App Mount ──
-app.mount("/", flet_fastapi.app(flet_main))
+try:
+    import flet.fastapi as flet_fastapi
+    from main import main as flet_main
+    app.mount("/", flet_fastapi.app(flet_main))
+except Exception as e:
+    print(f"Flet Mount Error: {e}")
