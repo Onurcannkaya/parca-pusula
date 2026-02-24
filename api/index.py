@@ -2,7 +2,7 @@ import sys
 import os
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-import flet_fastapi
+import flet.fastapi as flet_fastapi
 
 # Root dizinini path'e ekle (main.py ve scraper.py'ye erişmek için)
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
