@@ -1,0 +1,22 @@
+{
+    "short_name": "ParçaPusula",
+    "name": "ParçaPusula - Anlık Yedek Parça Karşılaştırma",
+    "icons": [
+        {
+            "src": "icon-192x192.png",
+            "type": "image/png",
+            "sizes": "192x192"
+        },
+        {
+            "src": "icon-512x512.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        }
+    ],
+    "start_url": "/",
+    "background_color": "#121212",
+    "display": "standalone",
+    "scope": "/",
+    "theme_color": "#FF6B00",
+    "description": "En ucuz yedek parçayı bulun ve pasif gelir kazanın."
+}

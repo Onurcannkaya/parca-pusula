@@ -1,0 +1,34 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+.env
+
+# Project specific ignores
+test_*.py
+dump_*.html
+err*.txt
+*.log
+search_logs.json
+hb_discovery.py
+hb_script_*.js
+depo_debug.html
+dom_test.txt
+test_api_formats.py
+test_api.py
+test_phase8_focused.py
+test_phase8.py
+test_scraper.py
+test_httpx.py
+test_counts.py
+test_classes.py
+test_big.py
+test_cffi.py
+test_depo.py
+test_mobile_dom.py
+
+# Vercel
+.vercel/

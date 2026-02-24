@@ -1,0 +1,6 @@
+OnlineYedekParca | Success: True | Price: ₺593,10 | Error: 
+AlloYedekParca | Success: False | Price:  | Error: Site Koruma Altında
+ParcaDeposu | Success: False | Price:  | Error: Site Koruma Altında (Bot Koruması)
+n11 | Success: False | Price:  | Error: Fiyat Alınamadı
+Hepsiburada | Success: False | Price:  | Error: Fiyat Alınamadı
+Sahibinden | Success: False | Price:  | Error: Site Koruma Altında (403)
