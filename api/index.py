@@ -4,16 +4,19 @@ import flet.fastapi as flet_fastapi
 import sys
 import os
 
-# Root dizinini path'e ekle (Vercel'de root'taki scraper.py ve main.py'ye erişmek için)
-# Vercel'de current working directory genellikle root'tur.
-sys.path.append(os.getcwd())
+# Deterministic Path Resolution for Vercel
+# index.py is in 'api/', so '..' is the root where scraper.py and main.py live.
+current_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.dirname(current_dir)
+if root_dir not in sys.path:
+    sys.path.insert(0, root_dir)
 
 try:
     from scraper import ScraperEngine
     from main import main as flet_main
 except ImportError as e:
     print(f"[FATAL] Modül yükleme hatası: {e}")
-    # Fallback or error re-raise for Vercel logs
+    # Re-raise to let Vercel capture the crash logs
     raise e
 
 app = FastAPI(title="ParçaPusula API", description="Serverless Fullstack Engine")
@@ -59,5 +62,4 @@ async def health_check():
     return {"status": "ok", "app": "ParcaPusula Fullstack Engine"}
 
 # ── Flet App Mount ──
-# Root (/) Flet'e gider, /api/ ise FastAPI'ye.
 app.mount("/", flet_fastapi.app(flet_main))
