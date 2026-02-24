@@ -231,17 +231,14 @@ def main(page: ft.Page):
             search_field.prefix_icon = get_icon("DIRECTIONS_CAR")
         page.update()
 
-    search_toggle = ft.CupertinoSlidingSegmentedButton(
+    search_toggle = ft.Tabs(
         selected_index=0,
-        padding=get_padding().all(4),
-        controls=[
-            ft.Text("Parça Ara", size=13, weight=get_fw("W_600")),
-            ft.Text("Şasi No", size=13, weight=get_fw("W_600")),
-        ],
         on_change=toggle_search_type,
+        tabs=[
+            ft.Tab(text="Parça Ara"),
+            ft.Tab(text="Şasi No"),
+        ],
         expand=True,
-        bgcolor="#111111",
-        thumb_color=BG_CARD,
     )
 
     # ── Yükleme ve Durum Göstergesi ──
@@ -255,12 +252,12 @@ def main(page: ft.Page):
         "Aramaya başlamak için bilgi girin.", 
         size=14, 
         color=TEXT_GREY, 
-        text_align=ft.TextAlign.CENTER
+        text_align=get_align("CENTER")
     )
     
     results_list = ft.ListView(
         spacing=0,
-        padding=ft.Padding.symmetric(horizontal=16, vertical=8),
+        padding=get_padding().symmetric(horizontal=16, vertical=8),
         expand=True,
         auto_scroll=False
     )
