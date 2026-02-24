@@ -1,6 +1,4 @@
 flet>=0.25.0
-flet-web
-flet-fastapi
 fastapi
 uvicorn
 httpx
