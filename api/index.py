@@ -56,8 +56,25 @@ async def search_parts(q: str):
         return {"error": str(e), "success": False}
 
 # ── Flet Arayüz Entegrasyonu (Mapping Engineer Özel) ──
-from main import main as flet_main
+try:
+    from main import main as flet_main
+    # Vercel'deki flet-fastapi kütüphanesi web_renderer.value beklediği için derme çatma bir Enum benzeri nesne veriyoruz.
+    class RendererMock:
+        def __init__(self, val): self.value = val
 
-# EN KRİTİK ADIM: Flet'i FastAPI'nin kök dizinine (/) monte et
-# Bu satır, Vercel'deki 404/Not Found hatasını çözen anahtar işlemdir.
-app.mount("/", flet_fastapi.app(flet_main))
+    target_renderer = RendererMock("html")
+    if hasattr(ft, "WebRenderer"):
+        if hasattr(ft.WebRenderer, "HTML"):
+            target_renderer = ft.WebRenderer.HTML
+        elif hasattr(ft.WebRenderer, "html"):
+            target_renderer = ft.WebRenderer.html
+
+    app.mount("/", flet_fastapi.app(
+        flet_main, 
+        web_renderer=target_renderer,
+    ))
+    print("[INFO] Flet mounted at /")
+except Exception as e:
+    import traceback
+    print(f"[FATAL] Flet mounting error: {e}")
+    traceback.print_exc()

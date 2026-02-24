@@ -17,7 +17,13 @@ GREEN_NEON   = "#00C853"   # Neon Yeşil (En Ucuz Vurgusu)
 RED_ERR      = "#FF5252"
 YELLOW_WARN  = "#FFC107"
 
-API_URL = "/api/search"
+# API_URL = "/api/search" # Sunucu tarafında doğrudan ScraperEngine kullanılacak
+from scraper import ScraperEngine
+from flet_resolver import (
+    get_icon, get_fw, get_align, get_cross, get_fit, 
+    get_overflow, get_scroll, get_clip, get_color,
+    get_padding, get_margin, get_br
+)
 
 # ─────────────────────────── UI Bileşenleri (Components) ────────────────────
 def build_product_card(r: dict, is_cheapest: bool) -> ft.Container:
@@ -36,12 +42,12 @@ def build_product_card(r: dict, is_cheapest: bool) -> ft.Container:
     # En Ucuz Rozeti
     badge = ft.Container(
         content=ft.Row([
-            ft.Icon(ft.Icons.NEW_RELEASES_OUTLINED, color="#fff", size=14),
-            ft.Text("EN İYİ FİYAT", size=11, color="#fff", weight=ft.FontWeight.W_900)
-        ], spacing=4, alignment=ft.MainAxisAlignment.CENTER),
+            ft.Icon(get_icon("NEW_RELEASES_OUTLINED"), color="#fff", size=14),
+            ft.Text("EN İYİ FİYAT", size=11, color="#fff", weight=get_fw("W_900"))
+        ], spacing=4, alignment=get_align("CENTER")),
         bgcolor=GREEN_NEON,
-        border_radius=ft.BorderRadius.only(top_left=12, bottom_right=12),
-        padding=ft.Padding.symmetric(horizontal=10, vertical=4),
+        border_radius=get_br().only(top_left=12, bottom_right=12),
+        padding=get_padding().symmetric(horizontal=10, vertical=4),
         visible=is_cheapest
     )
 
@@ -62,9 +68,9 @@ def build_product_card(r: dict, is_cheapest: bool) -> ft.Container:
         r.get("part_name", "") if success else r.get("status", "Erişim Hatası"),
         size=15,
         color=TEXT_WHITE if success else (TEXT_GREY if is_not_found else RED_ERR),
-        weight=ft.FontWeight.W_500,
+        weight=get_fw("W_500"),
         max_lines=2,
-        overflow=ft.TextOverflow.ELLIPSIS,
+        overflow=get_overflow("ELLIPSIS"),
     )
 
     # Fiyat Alanı
@@ -73,7 +79,7 @@ def build_product_card(r: dict, is_cheapest: bool) -> ft.Container:
         price_val,
         size=28 if success else 20,
         color=AMBER if success else TEXT_GREY,
-        weight=ft.FontWeight.BOLD,
+        weight=get_fw("BOLD"),
     )
 
     # Satıcı (Site) ve Favicon
@@ -98,29 +104,29 @@ def build_product_card(r: dict, is_cheapest: bool) -> ft.Container:
     engine_val = r.get("engine", "Stealth")
     is_scraperapi = "ScraperAPI" in engine_val
     engine_badge = ft.Container(
-        content=ft.Text(engine_val, size=10, weight=ft.FontWeight.BOLD, color=BG_DARK),
-        bgcolor=ft.Colors.RED_400 if is_scraperapi else ft.Colors.GREEN_400,
+        content=ft.Text(engine_val, size=10, weight=get_fw("BOLD"), color=BG_DARK),
+        bgcolor=get_color("RED_400") if is_scraperapi else get_color("GREEN_400"),
         border_radius=4,
-        padding=ft.Padding.symmetric(horizontal=4, vertical=2)
+        padding=get_padding().symmetric(horizontal=4, vertical=2)
     )
 
     seller_row = ft.Row([
-        ft.Image(src=favicon_url, width=16, height=16, fit=ft.BoxFit.CONTAIN),
+        ft.Image(src=favicon_url, width=16, height=16, fit=get_fit("CONTAIN")),
         seller_text,
         engine_badge if success else ft.Container()
-    ], spacing=6, alignment=ft.MainAxisAlignment.END, vertical_alignment=ft.CrossAxisAlignment.CENTER)
+    ], spacing=6, alignment=get_align("END"), vertical_alignment=get_cross("CENTER"))
 
     buy_button = ft.FilledButton(
         content=ft.Row([
-            ft.Text("Siteye Git" if success else "Stokta Yok", size=15, weight=ft.FontWeight.BOLD),
-            ft.Icon(ft.Icons.ARROW_OUTWARD if success else ft.Icons.NOT_INTERESTED, size=18)
-        ], alignment=ft.MainAxisAlignment.CENTER, spacing=6),
+            ft.Text("Siteye Git" if success else "Stokta Yok", size=15, weight=get_fw("BOLD")),
+            ft.Icon(get_icon("ARROW_OUTWARD") if success else get_icon("NOT_INTERESTED"), size=18)
+        ], alignment=get_align("CENTER"), spacing=6),
         url=r.get("affiliate_url", "") if success else None,
         style=ft.ButtonStyle(
             color=BG_DARK if success else TEXT_GREY,
             bgcolor=AMBER if success else BG_DARK,
             shape=ft.RoundedRectangleBorder(radius=8),
-            padding=ft.Padding.symmetric(vertical=16)
+            padding=get_padding().symmetric(vertical=16)
         ),
         disabled=not success
     )
@@ -133,8 +139,8 @@ def build_product_card(r: dict, is_cheapest: bool) -> ft.Container:
     wa_url = f"https://wa.me/?text={urllib.parse.quote(msg)}"
     
     wa_button = ft.IconButton(
-        icon=ft.Icons.SHARE,
-        icon_color=ft.Colors.GREEN_400 if success else TEXT_GREY,
+        icon=get_icon("SHARE"),
+        icon_color=get_color("GREEN_400") if success else TEXT_GREY,
         tooltip="WhatsApp ile Paylaş",
         url=wa_url if success else None,
         disabled=not success,
@@ -147,7 +153,7 @@ def build_product_card(r: dict, is_cheapest: bool) -> ft.Container:
 
     card_content = ft.Column(
         [
-            ft.Row([badge], alignment=ft.MainAxisAlignment.START) if is_cheapest else ft.Container(height=0),
+            ft.Row([badge], alignment=get_align("START")) if is_cheapest else ft.Container(height=0),
             ft.Container(
                 content=ft.Column(
                     [
@@ -157,15 +163,15 @@ def build_product_card(r: dict, is_cheapest: bool) -> ft.Container:
                             [
                                 ft.Column([price_text, seller_row], spacing=4),
                             ],
-                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                            vertical_alignment=ft.CrossAxisAlignment.END
+                            alignment=get_align("SPACE_BETWEEN"),
+                            vertical_alignment=get_cross("END")
                         ),
                         ft.Container(height=16),
                         button_row
                     ],
                     spacing=0
                 ),
-                padding=ft.Padding.only(left=16, right=16, bottom=16, top=8 if is_cheapest else 16)
+                padding=get_padding().only(left=16, right=16, bottom=16, top=8 if is_cheapest else 16)
             )
         ],
         spacing=0
@@ -176,9 +182,9 @@ def build_product_card(r: dict, is_cheapest: bool) -> ft.Container:
         bgcolor=BG_CARD,
         border=border,
         border_radius=12,
-        margin=ft.Margin.only(bottom=16),
+        margin=get_margin().only(bottom=16),
         shadow=shadow,
-        clip_behavior=ft.ClipBehavior.HARD_EDGE
+        clip_behavior=get_clip("HARD_EDGE")
     )
 
 
@@ -191,7 +197,7 @@ def main(page: ft.Page):
     page.window_width = 400
     page.window_height = 800
     page.theme = ft.Theme(font_family="Roboto")
-    page.scroll = ft.ScrollMode.HIDDEN 
+    page.scroll = get_scroll("HIDDEN") 
 
     searching = False
     search_type = "parca"
@@ -207,10 +213,10 @@ def main(page: ft.Page):
         cursor_color=AMBER,
         text_size=15,
         border_radius=8,
-        content_padding=ft.Padding.symmetric(horizontal=12, vertical=12),
+        content_padding=get_padding().symmetric(horizontal=12, vertical=12),
         expand=True,
         on_submit=lambda e: asyncio.ensure_future(do_search()),
-        prefix_icon=ft.Icons.SEARCH
+        prefix_icon=get_icon("SEARCH")
     )
 
     def toggle_search_type(e):
@@ -218,19 +224,19 @@ def main(page: ft.Page):
         if e.control.selected_index == 0:
             search_type = "parca"
             search_field.hint_text = "Parça adı veya kodu..."
-            search_field.prefix_icon = ft.Icons.SEARCH
+            search_field.prefix_icon = get_icon("SEARCH")
         else:
             search_type = "sasi"
             search_field.hint_text = "17 Haneli Şasi No Giriniz..."
-            search_field.prefix_icon = ft.Icons.DIRECTIONS_CAR
+            search_field.prefix_icon = get_icon("DIRECTIONS_CAR")
         page.update()
 
     search_toggle = ft.CupertinoSlidingSegmentedButton(
         selected_index=0,
-        padding=ft.Padding.all(4),
+        padding=get_padding().all(4),
         controls=[
-            ft.Text("Parça Ara", size=13, weight=ft.FontWeight.W_600),
-            ft.Text("Şasi No", size=13, weight=ft.FontWeight.W_600),
+            ft.Text("Parça Ara", size=13, weight=get_fw("W_600")),
+            ft.Text("Şasi No", size=13, weight=get_fw("W_600")),
         ],
         on_change=toggle_search_type,
         expand=True,
@@ -284,17 +290,30 @@ def main(page: ft.Page):
         page.update()
 
         try:
-            async with httpx.AsyncClient() as client:
-                response = await client.get(f"{API_URL}?q={query}", timeout=25.0)
-                response.raise_for_status()
-                data = response.json()
-                results = data.get("results", [])
-        except httpx.HTTPStatusError as e:
-             status_text.value = f"Sunucu hatası ({e.response.status_code})"
-             status_text.color = RED_ERR
-             results = []
+            # VERCEL FIX: HTTPX ile localhost'a istek atmak yerine doğrudan ScraperEngine'i çağırıyoruz.
+            # Bu hem performansı artırır hem de Vercel'deki yönlendirme/bağlantı hatalarını önler.
+            engine = ScraperEngine()
+            results_raw = await engine.search_all(query)
+            
+            # Sonuçları API formatına dönüştürüyoruz (mevcut UI kodunun bozulmaması için)
+            results = [
+                {
+                    "site": r.site_name,
+                    "success": r.success,
+                    "part_name": r.part_name,
+                    "price_str": r.price_str,
+                    "price_numeric": r.price_numeric,
+                    "url": r.url,
+                    "affiliate_url": r.affiliate_url,
+                    "engine": getattr(r, "engine", "Stealth"),
+                    "status": r.error_msg if not r.success else "OK"
+                }
+                for r in results_raw
+            ]
         except Exception as exc:
-            status_text.value = "Bağlantı kurulamadı. İnternetinizi kontrol edin."
+            import traceback
+            traceback.print_exc()
+            status_text.value = f"Arama sırasında hata oluştu: {str(exc)[:50]}"
             status_text.color = RED_ERR
             results = []
         finally:
@@ -327,13 +346,13 @@ def main(page: ft.Page):
     # ── Header Alanı (Markalama) ──
     header = ft.Container(
         content=ft.Row([
-            ft.Icon(ft.Icons.PRECISION_MANUFACTURING, color=AMBER, size=32), # Sanayi İkonu
+            ft.Icon(get_icon("PRECISION_MANUFACTURING"), color=AMBER, size=32), # Sanayi İkonu
             ft.Column([
-                ft.Text("ParçaPusula | Sivas Sanayi", size=22, color=TEXT_WHITE, weight=ft.FontWeight.W_900),
-                ft.Text("Sivas Sanayi Özel Edisyonu", size=12, color=AMBER, weight=ft.FontWeight.W_500, italic=True),
+                ft.Text("ParçaPusula | Sivas Sanayi", size=22, color=TEXT_WHITE, weight=get_fw("W_900")),
+                ft.Text("Sivas Sanayi Özel Edisyonu", size=12, color=AMBER, weight=get_fw("W_500"), italic=True),
             ], spacing=2)
-        ], alignment=ft.MainAxisAlignment.START, vertical_alignment=ft.CrossAxisAlignment.CENTER),
-        padding=ft.Padding.only(left=16, right=16, top=20, bottom=10)
+        ], alignment=get_align("START"), vertical_alignment=get_cross("CENTER")),
+        padding=get_padding().only(left=16, right=16, top=20, bottom=10)
     )
 
     # ── Yapışık (Sticky) Arama Arayüzü ──
@@ -343,7 +362,7 @@ def main(page: ft.Page):
             ft.Row([
                 search_field,
                 ft.IconButton(
-                    icon=ft.Icons.SEARCH,
+                    icon=get_icon("SEARCH"),
                     icon_color=BG_DARK,
                     bgcolor=AMBER,
                     icon_size=24,
@@ -353,25 +372,25 @@ def main(page: ft.Page):
             ]),
         ], spacing=12),
         bgcolor=BG_CARD,
-        padding=ft.Padding.all(16),
-        border_radius=ft.BorderRadius.only(bottom_left=16, bottom_right=16),
+        padding=get_padding().all(16),
+        border_radius=get_br().only(bottom_left=16, bottom_right=16),
         shadow=ft.BoxShadow(blur_radius=10, color="#00000040", offset=ft.Offset(0, 4))
     )
 
     # ── İmza (Footer) ──
     footer = ft.Container(
         content=ft.Column([
-            ft.Text("Developed by Onurcan KAYA | Mapping Engineer", size=11, italic=True, color=ft.Colors.GREY_500, text_align=ft.TextAlign.CENTER)
-        ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=4),
+            ft.Text("Developed by Onurcan KAYA | Mapping Engineer", size=11, italic=True, color=get_color("GREY_500"), text_align=get_align("CENTER"))
+        ], horizontal_alignment=get_cross("CENTER"), spacing=4),
         alignment=ft.Alignment(0, 0),
-        padding=ft.Padding.only(top=20, bottom=30)
+        padding=get_padding().only(top=20, bottom=30)
     )
 
     page.add(
         header,
         search_bar_container,
         progress_ring,
-        ft.Container(content=status_text, padding=ft.Padding.only(top=12, bottom=4), alignment=ft.Alignment(0, 0)),
+        ft.Container(content=status_text, padding=get_padding().only(top=12, bottom=4), alignment=ft.Alignment(0, 0)),
         results_list,
         footer
     )
