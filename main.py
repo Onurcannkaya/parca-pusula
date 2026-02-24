@@ -17,7 +17,7 @@ GREEN_NEON   = "#00C853"   # Neon Yeşil (En Ucuz Vurgusu)
 RED_ERR      = "#FF5252"
 YELLOW_WARN  = "#FFC107"
 
-API_URL = "http://127.0.0.1:8000/api/search"
+API_URL = "/api/search"
 
 # ─────────────────────────── UI Bileşenleri (Components) ────────────────────
 def build_product_card(r: dict, is_cheapest: bool) -> ft.Container:
@@ -377,4 +377,5 @@ def main(page: ft.Page):
     )
 
 if __name__ == "__main__":
-    ft.run(main)
+    ft.app(target=main)
+

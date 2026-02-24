@@ -1,10 +1,17 @@
+import sys
+import os
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+import flet_fastapi
+
+# Root dizinini path'e ekle (main.py ve scraper.py'ye erişmek için)
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from scraper import ScraperEngine
+from main import main as flet_main
 
-app = FastAPI(title="ParçaPusula API", description="Serverless Scraper API")
+app = FastAPI(title="ParçaPusula API", description="Serverless Fullstack Engine")
 
-# Allow requests from the Flet frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,34 +26,8 @@ engine = ScraperEngine()
 async def search_parts(q: str):
     if not q or len(q.strip()) < 2:
         raise HTTPException(status_code=400, detail="Arama terimi çok kısa.")
-    
     try:
         results = await engine.search_all(q.strip())
-        
-        # ── Başarılı aramaları JSON formatında yerel olarak logla (Caching için temel) ──
-        import json, os
-        from datetime import datetime
-        try:
-            log_file = "search_logs.json"
-            logs = []
-            if os.path.exists(log_file):
-                with open(log_file, "r", encoding="utf-8") as f:
-                    try:
-                        logs = json.load(f)
-                    except:
-                        pass
-            
-            logs.append({
-                "timestamp": datetime.now().isoformat(),
-                "query": q,
-                "found_count": sum(1 for r in results if r.success)
-            })
-            
-            with open(log_file, "w", encoding="utf-8") as f:
-                json.dump(logs[-100:], f, ensure_ascii=False, indent=2)  # Son 100 aramayı tutar
-        except Exception as log_err:
-            print("Loglama Hatası:", log_err)
-            
         return {
             "query": q,
             "results": [
@@ -69,4 +50,8 @@ async def search_parts(q: str):
 
 @app.get("/api/health")
 async def health_check():
-    return {"status": "ok", "app": "ParcaPusula Lite PWA Engine"}
+    return {"status": "ok", "app": "ParcaPusula Fullstack Engine"}
+
+# ── Flet App Mount ──
+# Vercel'de root (/) isteklerini Flet'e yönlendirmek için mount ediyoruz.
+app.mount("/", flet_fastapi.app(flet_main))
