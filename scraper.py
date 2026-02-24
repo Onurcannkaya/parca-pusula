@@ -1,13 +1,22 @@
-# scraper.py — ParçaPusula Lite Async Scraper Engine (Vercel & PWA Uyumlu)
 import asyncio
 import httpx
 import re
 import random
 import urllib.parse
-from curl_cffi.requests import AsyncSession
 from bs4 import BeautifulSoup
 from dataclasses import dataclass
 from typing import Optional
+
+# ── Katman 1 (curl_cffi) İçin Savunma Hattı ──
+try:
+    from curl_cffi.requests import AsyncSession
+    CURL_CFFI_AVAILABLE = True
+except ImportError:
+    print("[SYSTEM] UYARI: curl_cffi yüklenemedi. Katman 1 devre dışı, HTTPX/ScraperAPI fallbacks aktif.")
+    CURL_CFFI_AVAILABLE = False
+except Exception as e:
+    print(f"[SYSTEM] UYARI: curl_cffi başlatma hatası: {e}")
+    CURL_CFFI_AVAILABLE = False
 
 # ─────────────────────────── Veri Modelleri ──────────────────────────
 @dataclass
@@ -366,21 +375,24 @@ async def _scrape_one_with_limit(cfg: SiteConfig, query: str, dyn_headers: dict)
     max_retries = 3
     last_err = "Bilinmeyen Hata"
     
-    for attempt in range(max_retries):
-        try:
-            res = await _scrape_one(cfg, query, dyn_headers, use_httpx=False)
-            for r in res: r.engine = "Stealth (curl_cffi)"
-            return res
-        except Exception as e:
-            err_msg = str(e)
-            last_err = err_msg
-            if "HTTP_403_BLOCKED" in err_msg or "HTTP_429_BLOCKED" in err_msg or "HTTP_503_BLOCKED" in err_msg:
-                print(f"[{cfg.name}] Katman 1 (curl_cffi) Deneme {attempt+1}/{max_retries} Başarısız. Proxy Değiştirilip Tekrar Deneniyor...")
-                await asyncio.sleep(random.uniform(2.0, 4.0)) # Ban yememek için uzun bekle
-                continue
-            else:
-                print(f"[{cfg.name}] Kapsamlı Hata: {type(e).__name__} - {err_msg[:50]}")
-                break # Diğer hatalarda Katman 2'ye geç
+    if CURL_CFFI_AVAILABLE:
+        for attempt in range(max_retries):
+            try:
+                res = await _scrape_one(cfg, query, dyn_headers, use_httpx=False)
+                for r in res: r.engine = "Stealth (curl_cffi)"
+                return res
+            except Exception as e:
+                err_msg = str(e)
+                last_err = err_msg
+                if "HTTP_403_BLOCKED" in err_msg or "HTTP_429_BLOCKED" in err_msg or "HTTP_503_BLOCKED" in err_msg:
+                    print(f"[{cfg.name}] Katman 1 (curl_cffi) Deneme {attempt+1}/{max_retries} Başarısız. Proxy Değiştirilip Tekrar Deneniyor...")
+                    await asyncio.sleep(random.uniform(2.0, 4.0)) # Ban yememek için uzun bekle
+                    continue
+                else:
+                    print(f"[{cfg.name}] Kapsamlı Hata: {type(e).__name__} - {err_msg[:50]}")
+                    break # Diğer hatalarda Katman 2'ye geç
+    else:
+        print(f"[{cfg.name}] Katman 1 Pasif (curl_cffi bulunamadı), Katman 2'ye atlanıyor.")
                 
     # Max Retry aşıldıysa (Katman 1 Başarısız) => Katman 2: HTTPX HTTP/2 Fallback
     print(f"[{cfg.name}] Katman 1 aşıldı! Katman 2 (HTTPX HTTP/2 Fallback) deneniyor...")

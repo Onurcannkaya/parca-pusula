@@ -1,14 +1,20 @@
-import sys
-import os
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import flet.fastapi as flet_fastapi
+import sys
+import os
 
-# Root dizinini path'e ekle (main.py ve scraper.py'ye erişmek için)
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Root dizinini path'e ekle (Vercel'de root'taki scraper.py ve main.py'ye erişmek için)
+# Vercel'de current working directory genellikle root'tur.
+sys.path.append(os.getcwd())
 
-from scraper import ScraperEngine
-from main import main as flet_main
+try:
+    from scraper import ScraperEngine
+    from main import main as flet_main
+except ImportError as e:
+    print(f"[FATAL] Modül yükleme hatası: {e}")
+    # Fallback or error re-raise for Vercel logs
+    raise e
 
 app = FastAPI(title="ParçaPusula API", description="Serverless Fullstack Engine")
 
@@ -53,5 +59,5 @@ async def health_check():
     return {"status": "ok", "app": "ParcaPusula Fullstack Engine"}
 
 # ── Flet App Mount ──
-# Vercel'de root (/) isteklerini Flet'e yönlendirmek için mount ediyoruz.
+# Root (/) Flet'e gider, /api/ ise FastAPI'ye.
 app.mount("/", flet_fastapi.app(flet_main))
