@@ -1,7 +1,7 @@
 import sys
 import os
 
-# Deterministic Path Resolution
+# Root dizinini path'e ekle (main.py ve scraper.py'ye erişmek için)
 current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.dirname(current_dir)
 if root_dir not in sys.path:
@@ -9,7 +9,10 @@ if root_dir not in sys.path:
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+import flet as ft
+import flet.fastapi as flet_fastapi
 
+# FastAPI uygulamasını başlat
 app = FastAPI(title="ParçaPusula Fullstack")
 
 app.add_middleware(
@@ -22,7 +25,7 @@ app.add_middleware(
 
 @app.get("/api/health")
 async def health_check():
-    return {"status": "ok", "engine": "FastAPI Serverless"}
+    return {"status": "ok", "app": "ParcaPusula Engine"}
 
 @app.get("/api/search")
 async def search_parts(q: str):
@@ -52,10 +55,9 @@ async def search_parts(q: str):
     except Exception as e:
         return {"error": str(e), "success": False}
 
-# ── Flet App Mount ──
-try:
-    import flet.fastapi as flet_fastapi
-    from main import main as flet_main
-    app.mount("/", flet_fastapi.app(flet_main))
-except Exception as e:
-    print(f"Flet Mount Error: {e}")
+# ── Flet Arayüz Entegrasyonu (Mapping Engineer Özel) ──
+from main import main as flet_main
+
+# EN KRİTİK ADIM: Flet'i FastAPI'nin kök dizinine (/) monte et
+# Bu satır, Vercel'deki 404/Not Found hatasını çözen anahtar işlemdir.
+app.mount("/", flet_fastapi.app(flet_main))
