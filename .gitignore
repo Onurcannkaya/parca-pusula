@@ -32,3 +32,4 @@ test_mobile_dom.py
 
 # Vercel
 .vercel/
+.aider*

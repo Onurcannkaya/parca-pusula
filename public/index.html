@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#121212">
+    <meta name="description" content="ParçaPusula - Sivas Sanayi Özel Edisyonu">
+    <title>ParçaPusula | Sivas Sanayi</title>
+    
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23121212' width='100' height='100' rx='20'/><text x='50' y='65' font-size='50' text-anchor='middle' fill='%23FFB300'>⚙</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23121212' width='100' height='100' rx='20'/><text x='50' y='65' font-size='50' text-anchor='middle' fill='%23FFB300'>⚙</text></svg>">
+    
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --bg-card: #1E1E1E;
+            --amber: #FFB300;
+            --text-white: #E0E0E0;
+            --text-grey: #9E9E9E;
+            --green-neon: #00C853;
+            --red-err: #FF5252;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-white);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            padding: 24px 16px;
+            background-color: var(--bg-card);
+            text-align: center;
+            border-bottom: 2px solid var(--amber);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        header h1 {
+            color: var(--amber);
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        
+        header p {
+            color: var(--text-grey);
+            font-size: 14px;
+            font-style: italic;
+        }
+
+        main {
+            width: 100%;
+            max-width: 600px;
+            padding: 24px 16px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        #searchInput {
+            flex-grow: 1;
+            background-color: var(--bg-card);
+            border: 1px solid #333;
+            color: var(--text-white);
+            padding: 16px 20px;
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        #searchInput:focus {
+            border-color: var(--amber);
+            box-shadow: 0 0 0 2px rgba(255, 179, 0, 0.2);
+        }
+
+        #searchBtn {
+            background-color: var(--amber);
+            color: var(--bg-dark);
+            border: none;
+            padding: 0 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        #searchBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 179, 0, 0.3);
+        }
+        
+        #searchBtn:active {
+            transform: translateY(0);
+        }
+
+        #loader {
+            display: none;
+            text-align: center;
+            padding: 40px 0;
+            color: var(--amber);
+            font-weight: 600;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        #results {
+            display: grid;
+            gap: 16px;
+            width: 100%;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #333;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            border-color: #444;
+        }
+
+        .card.cheapest {
+            border: 2px solid var(--green-neon);
+            box-shadow: 0 4px 15px rgba(0, 200, 83, 0.15);
+            position: relative;
+        }
+
+        .badge {
+            position: absolute;
+            top: -12px;
+            right: 20px;
+            background-color: var(--green-neon);
+            color: var(--bg-dark);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-white);
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .card-price {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--amber);
+            margin-bottom: 8px;
+        }
+
+        .card-vendor {
+            font-size: 14px;
+            color: var(--text-grey);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .card-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background-color: #333;
+            color: var(--text-white);
+            text-align: center;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+        }
+
+        .card-btn:hover {
+            background-color: #444;
+        }
+        
+        .card-btn.active {
+            background-color: var(--amber);
+            color: var(--bg-dark);
+        }
+
+        .card-btn.active:hover {
+            background-color: #ffc13b;
+        }
+
+        .error-msg {
+            color: var(--red-err);
+            text-align: center;
+            padding: 20px;
+            background-color: rgba(255, 82, 82, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 82, 82, 0.3);
+        }
+        
+        .no-data {
+            color: var(--text-grey);
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>⚙ ParçaPusula</h1>
+        <p>Sivas Sanayi Özel Edisyonu</p>
+    </header>
+
+    <main>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Parça adı veya kodu girin..." autocomplete="off">
+            <button id="searchBtn">Ara</button>
+        </div>
+
+        <div id="loader">Kapsamlı arama yapılıyor, lütfen bekleyin...</div>
+        
+        <div id="results"></div>
+    </main>
+
+    <script>
+        // Service Worker Kaydı (PWA)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('SW Registered!', reg))
+                    .catch(err => console.error('SW Registration Failed', err));
+            });
+        }
+
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const resultsDiv = document.getElementById('results');
+        const loader = document.getElementById('loader');
+
+        // Enter tuşu desteği
+        searchInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        searchBtn.addEventListener('click', performSearch);
+
+        async function performSearch() {
+            const query = searchInput.value.trim();
+            if (!query) return;
+
+            // UI Reset
+            resultsDiv.innerHTML = '';
+            loader.style.display = 'block';
+            searchBtn.disabled = true;
+            searchBtn.style.opacity = '0.5';
+
+            try {
+                // API İsteği
+                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Sunucu Hatası: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.status === 'error') {
+                    throw new Error(data.message || 'Bilinmeyen bir hata oluştu');
+                }
+
+                renderResults(data.data);
+
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error-msg">❌ Hata: ${error.message}</div>`;
+            } finally {
+                loader.style.display = 'none';
+                searchBtn.disabled = false;
+                searchBtn.style.opacity = '1';
+            }
+        }
+
+        function renderResults(results) {
+            if (!results || results.length === 0) {
+                resultsDiv.innerHTML = '<div class="error-msg" style="color:var(--text-grey); border-color:#333; background:transparent;">Sonuç bulunamadı. Lütfen başka bir terim deneyin.</div>';
+                return;
+            }
+
+            // Sadece başarılı ve fiyatı olanları bulalım (En ucuzu hesaplamak için)
+            const successfulResults = results.filter(r => r.success && r.price_numeric !== null);
+            
+            let cheapestPrice = null;
+            if (successfulResults.length > 0) {
+                cheapestPrice = Math.min(...successfulResults.map(r => r.price_numeric));
+            }
+
+            let htmlStr = '';
+
+            results.forEach(res => {
+                const isSuccess = res.success;
+                const isCheapest = isSuccess && res.price_numeric === cheapestPrice;
+                
+                let cardClass = 'card';
+                if (isCheapest) cardClass += ' cheapest';
+
+                const title = isSuccess ? res.part_name : (res.status || 'Hata Oluştu');
+                const priceStr = isSuccess ? res.price_str : '<span class="no-data">Stokta Yok</span>';
+                const buttonClass = isSuccess ? 'card-btn active' : 'card-btn';
+                const buttonText = isSuccess ? 'Siteye Git 🚀' : 'Bulunamadı';
+                const url = (isSuccess && (res.affiliate_url || res.url)) ? (res.affiliate_url || res.url) : '#';
+
+                htmlStr += `
+                    <div class="${cardClass}">
+                        ${isCheapest ? '<div class="badge">EFSANE FİYAT</div>' : ''}
+                        <div class="card-title">${title}</div>
+                        <div class="card-price">${priceStr}</div>
+                        <div class="card-vendor">🏢 ${res.site || 'Bilinmeyen Satıcı'}</div>
+                        <a href="${url}" target="_blank" class="${buttonClass}" ${!isSuccess ? 'onclick="return false;" style="opacity:0.5; cursor:not-allowed;"' : ''}>
+                            ${buttonText}
+                        </a>
+                    </div>
+                `;
+            });
+
+            resultsDiv.innerHTML = htmlStr;
+        }
+    </script>
+</body>
+</html>
