@@ -48,20 +48,23 @@ SITES: list[SiteConfig] = [
         result_item_sel = "div.showcase, div.ProductItem, div.product-item, div.product-card, div.card",
         title_sel       = "div.showcase-title a, div.productName a, div.product-title a, h3.name, a.title, div.product-name a, h3.product-name a",
         price_sel       = "div.showcase-price span, div.discountPrice span, div.product-price span, span.price, div.price, div.current-price, span.current-price",
+        timeout_ms      = 8000
     ),
     SiteConfig(
         name="AlloYedekParca",
         base_search_url="https://www.aloparca.com/arama/{query}",
         result_item_sel=".product-item, .product-card",
         title_sel="a.product-name, h3.product-title a",
-        price_sel=".product-price, .price"
+        price_sel=".product-price, .price",
+        timeout_ms=8000
     ),
     SiteConfig(
         name="ParcaDeposu",
         base_search_url="https://www.otoparcadeposu.com/arama?q={query}",
         result_item_sel=".showcase",
         title_sel=".showcase-title a",
-        price_sel=".showcase-price-new"
+        price_sel=".showcase-price-new",
+        timeout_ms=8000
     ),
     SiteConfig(
         name            = "n11",
@@ -69,6 +72,7 @@ SITES: list[SiteConfig] = [
         result_item_sel = "li.column, div.pro, ul.list-ul li, div.listView ul li, li.product, div.product",
         title_sel       = "h3.productName, a.proName, h3.name, h3",
         price_sel       = "ins, span.newPrice c, div.priceContainer ins, div.price, span.new-price",
+        timeout_ms      = 8000
     ),
     SiteConfig(
         name            = "Hepsiburada",
@@ -76,6 +80,7 @@ SITES: list[SiteConfig] = [
         result_item_sel = "li.productListContent-item, ul.productList li, div[data-test-id='product-card'], div.product-card",
         title_sel       = "h3[data-test-id='product-card-name'], h3, div.product-title",
         price_sel       = "div[data-test-id='price-current-price'], span.price, div.price-value, span.price-current-price",
+        timeout_ms      = 8000
     ),
     SiteConfig(
         name            = "Sahibinden",
@@ -83,6 +88,7 @@ SITES: list[SiteConfig] = [
         result_item_sel = "tr.searchResultsItem, div.list-item",
         title_sel       = "a.classifiedTitle, h3.title",
         price_sel       = "td.searchResultsPriceValue div, span.price",
+        timeout_ms      = 8000
     ),
 ]
 
@@ -158,28 +164,28 @@ async def _scrape_one(cfg: SiteConfig, query: str, dyn_headers: dict, use_httpx:
             import os
             scraper_key = os.environ.get("SCRAPERAPI_KEY", "b33dummy123") # Örnek / Env'den gelir
             api_url = f"http://api.scraperapi.com?api_key={scraper_key}&url={urllib.parse.quote(url)}&country_code=tr"
-            async with httpx.AsyncClient(timeout=cfg.timeout_ms / 1000.0 * 2) as client:
+            async with httpx.AsyncClient(timeout=8.0) as client:
                 response = await client.get(api_url)
         elif use_httpx:
-            async with httpx.AsyncClient(http2=True, verify=False, proxies=proxy, timeout=cfg.timeout_ms / 1000.0) as client:
+            async with httpx.AsyncClient(http2=True, verify=False, timeout=8.0) as client:
                 response = await client.get(url, headers=dyn_headers)
         else:
             from curl_cffi.requests import AsyncSession
             # iOS 17 Safari impersonation for stealth
-            async with AsyncSession(impersonate="safari17_0", proxies=proxies_dict, headers=dyn_headers, verify=False) as client:
+            async with AsyncSession(impersonate="safari17_0", headers=dyn_headers, verify=False) as client:
                 # ── Session & Cookie Persistence (Pre-flight) ──
                 # Arama yapmadan önce sitenin ana sayfasına bir ön istek atarak cf_clearance ve session_id gibi çerezleri topla
                 from urllib.parse import urlparse
                 base_domain = f"{urlparse(cfg.base_search_url).scheme}://{urlparse(cfg.base_search_url).netloc}"
                 
                 try:
-                    await client.get(base_domain, timeout=cfg.timeout_ms / 1000.0)
-                    await asyncio.sleep(random.uniform(0.5, 1.2)) # Çerezleri sindirmesi için kısa bir bekleme
+                    await client.get(base_domain, timeout=8)
+                    await asyncio.sleep(0.5) # Çerezleri sindirmesi için kısa bir bekleme (Vercel zamanıyla uyumlu)
                 except Exception as e:
-                    print(f"[{cfg.name}] Preflight (Cookie Session) Hatası: {e}")
+                    pass
                 
                 # Çerezlerle birlikte asıl arama isteğini at
-                response = await client.get(url, timeout=cfg.timeout_ms / 1000.0)
+                response = await client.get(url, timeout=8)
         
         if response.status_code >= 400:
             if response.status_code in [403, 429, 503]:
@@ -351,68 +357,46 @@ async def _scrape_one(cfg: SiteConfig, query: str, dyn_headers: dict, use_httpx:
 
         return results_list
 
+    except asyncio.TimeoutError:
+        return [SearchResult(cfg.name, False, error_msg="Zaman aşımı (Vercel 10s Tavanı)")]
     except Exception as exc:
-        from curl_cffi.requests.errors import Timeout
-        if isinstance(exc, Timeout):
-            print(f"[{cfg.name}] HATA: Zaman aşımı.")
-            return [SearchResult(cfg.name, False, error_msg="Zaman aşımı — site yanıt vermedi.")]
-        print(f"[{cfg.name}] BEKLENMEYEN HATA: {type(exc).__name__} - {str(exc)[:50]}")
-        return [SearchResult(cfg.name, False, error_msg="Fiyat Alınamadı")]
+        err_msg = str(exc)
+        if "timeout" in err_msg.lower():
+            return [SearchResult(cfg.name, False, error_msg="Zaman aşımı (Vercel 10s Tavanı)")]
+        return [SearchResult(cfg.name, False, error_msg="Fiyat Alınamadı veya Engellendi")]
 
 async def _scrape_one_with_limit(cfg: SiteConfig, query: str, dyn_headers: dict) -> list[SearchResult]:
     import random
     import asyncio
     
-    # Target (Site) Spesifik Bekleme Süreleri Optimization
-    if cfg.name in ["n11", "Hepsiburada", "Sahibinden"]:
-        delay = random.uniform(2.5, 5.0)
-    else:
-        delay = random.uniform(0.5, 2.0)
-        
+    # Target (Site) Spesifik Bekleme Süreleri Optimization (Kısaltıldı)
+    delay = random.uniform(0.2, 0.5)
     await asyncio.sleep(delay)
     
-    # ── Akıllı Proxy & IP Failover (Retry Loop) ──
-    max_retries = 3
-    last_err = "Bilinmeyen Hata"
-    
+    # Sadece 1 kez Katman 1'i dene, Vercel'de çok fazla denemeye vaktimiz yok!
     if CURL_CFFI_AVAILABLE:
-        for attempt in range(max_retries):
-            try:
-                res = await _scrape_one(cfg, query, dyn_headers, use_httpx=False)
-                for r in res: r.engine = "Stealth (curl_cffi)"
-                return res
-            except Exception as e:
-                err_msg = str(e)
-                last_err = err_msg
-                if "HTTP_403_BLOCKED" in err_msg or "HTTP_429_BLOCKED" in err_msg or "HTTP_503_BLOCKED" in err_msg:
-                    print(f"[{cfg.name}] Katman 1 (curl_cffi) Deneme {attempt+1}/{max_retries} Başarısız. Proxy Değiştirilip Tekrar Deneniyor...")
-                    await asyncio.sleep(random.uniform(2.0, 4.0)) # Ban yememek için uzun bekle
-                    continue
-                else:
-                    print(f"[{cfg.name}] Kapsamlı Hata: {type(e).__name__} - {err_msg[:50]}")
-                    break # Diğer hatalarda Katman 2'ye geç
-    else:
-        print(f"[{cfg.name}] Katman 1 Pasif (curl_cffi bulunamadı), Katman 2'ye atlanıyor.")
-                
-    # Max Retry aşıldıysa (Katman 1 Başarısız) => Katman 2: HTTPX HTTP/2 Fallback
-    print(f"[{cfg.name}] Katman 1 aşıldı! Katman 2 (HTTPX HTTP/2 Fallback) deneniyor...")
+        try:
+            res = await _scrape_one(cfg, query, dyn_headers, use_httpx=False)
+            for r in res: r.engine = "Stealth (curl_cffi)"
+            return res
+        except Exception as e:
+            pass # Katman 2'ye atla
+
+    # Hızlı Katman 2 (HTTPX HTTP/2 Fallback)
     try:
-        await asyncio.sleep(random.uniform(1.0, 2.5))
         res2 = await _scrape_one(cfg, query, dyn_headers, use_httpx=True)
         for r in res2: r.engine = "Stealth (httpx)"
         return res2
     except Exception as fallback_err:
-        print(f"[{cfg.name}] Katman 2 Başarısız: {str(fallback_err)[:50]}")
+        pass
         
-        # ── Katman 3: ScraperAPI Kriz Motoru ──
-        print(f"[{cfg.name}] Tüm Stealth Motorları Tükendi! Katman 3: ScraperAPI Kriz Motoru Devrede...")
-        try:
-            res3 = await _scrape_one(cfg, query, dyn_headers, use_scraperapi=True)
-            for r in res3: r.engine = "ScraperAPI"
-            return res3
-        except Exception as api_err:
-             print(f"[{cfg.name}] Katman 3 (ScraperAPI) de Başarısız: {str(api_err)[:50]}")
-             return [SearchResult(cfg.name, False, error_msg="Sürekli Engel (Bot Koruması)", engine="Failed")]
+    # Sona kalan Katman 3 (ScraperAPI Kriz Motoru)
+    try:
+        res3 = await _scrape_one(cfg, query, dyn_headers, use_scraperapi=True)
+        for r in res3: r.engine = "ScraperAPI"
+        return res3
+    except Exception as api_err:
+        return [SearchResult(cfg.name, False, error_msg="Sürekli Engel (Bot Koruması)", engine="Failed")]
 
 class ScraperEngine:
     def __init__(self):
