@@ -69,9 +69,9 @@ SITES: list[SiteConfig] = [
     SiteConfig(
         name            = "n11",
         base_search_url = "https://www.n11.com/arama?q={query}",
-        result_item_sel = "li.column, div.pro, ul.list-ul li, div.listView ul li, li.product, div.product",
-        title_sel       = "h3.productName, a.proName, h3.name, h3",
-        price_sel       = "ins, span.newPrice c, div.priceContainer ins, div.price, span.new-price",
+        result_item_sel = "li.column, div.pro, ul.list-ul li, div.listView ul li, li.catalog-item, div.product-item",
+        title_sel       = "h3.productName, a.proName, h3.name, h3[class*='title'], h3",
+        price_sel       = "ins, span.newPrice c, div.priceContainer ins, div.price span, span.new-price",
         timeout_ms      = 8000
     ),
     SiteConfig(
@@ -171,8 +171,8 @@ async def _scrape_one(cfg: SiteConfig, query: str, dyn_headers: dict, use_httpx:
                 response = await client.get(url, headers=dyn_headers)
         else:
             from curl_cffi.requests import AsyncSession
-            # iOS 17 Safari impersonation for stealth
-            async with AsyncSession(impersonate="safari17_0", headers=dyn_headers, verify=False) as client:
+            # Chrome impersonation for stealth
+            async with AsyncSession(impersonate="chrome120", headers=dyn_headers, verify=False) as client:
                 # ── Session & Cookie Persistence (Pre-flight) ──
                 # Arama yapmadan önce sitenin ana sayfasına bir ön istek atarak cf_clearance ve session_id gibi çerezleri topla
                 from urllib.parse import urlparse
@@ -189,8 +189,8 @@ async def _scrape_one(cfg: SiteConfig, query: str, dyn_headers: dict, use_httpx:
         
         if response.status_code >= 400:
             if response.status_code in [403, 429, 503]:
-                print(f"[{cfg.name}] KRİTİK: {response.status_code} Hata! Bot Koruması/Rate Limit.")
-                raise Exception(f"HTTP_{response.status_code}_BLOCKED")
+                # 403/Forbidden gibi hataları sessizce yakala, terminali boğma
+                return [SearchResult(cfg.name, False, error_msg="Erişim Engellendi (Koruma)")]
             return [SearchResult(cfg.name, False, error_msg="Site Koruma Altında")]
 
         soup = BeautifulSoup(response.text, "html.parser")
@@ -409,23 +409,28 @@ class ScraperEngine:
             "https://yandex.com.tr/",
             "https://www.bing.com/",
             "https://duckduckgo.com/",
-            "https://www.apple.com/"
+            "https://www.yahoo.com/"
         ]
-        # Gerçek Mac OS Safari 17.0 izleri (Desktop rendering, yet still stealth via safari17_0 impersonate)
+        # Güncel Chrome Windows masaüstü kimliği (User-Agent ve Sec-* başlıkları eklendi)
         return {
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             "Accept-Language": "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7",
             "Accept-Encoding": "gzip, deflate, br",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
             "Referer": random.choice(referers),
+            "Sec-Ch-Ua": '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+            "Sec-Ch-Ua-Mobile": "?0",
+            "Sec-Ch-Ua-Platform": '"Windows"',
             "Sec-Fetch-Dest": "document",
             "Sec-Fetch-Mode": "navigate",
             "Sec-Fetch-Site": "cross-site",
+            "Sec-Fetch-User": "?1",
             "Upgrade-Insecure-Requests": "1"
         }
 
     async def search_all(self, query: str) -> list[SearchResult]:
-        print(f"[*] İstek atılıyor. Kullanılan UA: Chrome 120 Impersonation ve Rotating Proxies...")
+        # Motor siteleri sırayla DEĞİL, asyncio.gather() ile aynı anda (concurrent) aratıyor
+        print(f"[*] Eşzamanlı (Concurrent) Arama Başladı: {query} ...")
         
         dyn_headers = self._headers_factory()
         
