@@ -30,6 +30,7 @@ class SearchResult:
     error_msg    : str         = ""
     affiliate_url: str         = ""
     engine       : str         = "Stealth"
+    image_url    : str         = ""
 
 @dataclass
 class SiteConfig:
@@ -38,6 +39,7 @@ class SiteConfig:
     result_item_sel: str
     title_sel      : str
     price_sel      : str
+    image_sel      : str       = ""
     timeout_ms     : int = 15_000
 
 # ─────────────────────────── Site Tanımları ──────────────────────────
@@ -48,6 +50,7 @@ SITES: list[SiteConfig] = [
         result_item_sel = "div.showcase, div.ProductItem, div.product-item, div.product-card, div.card",
         title_sel       = "div.showcase-title a, div.productName a, div.product-title a, h3.name, a.title, div.product-name a, h3.product-name a",
         price_sel       = "div.showcase-price span, div.discountPrice span, div.product-price span, span.price, div.price, div.current-price, span.current-price",
+        image_sel       = "img.product-image, img.lazy, img",
         timeout_ms      = 8000
     ),
     SiteConfig(
@@ -56,6 +59,7 @@ SITES: list[SiteConfig] = [
         result_item_sel=".product-item, .product-card",
         title_sel="a.product-name, h3.product-title a",
         price_sel=".product-price, .price",
+        image_sel="img.product-image, img",
         timeout_ms=8000
     ),
     SiteConfig(
@@ -64,6 +68,7 @@ SITES: list[SiteConfig] = [
         result_item_sel=".showcase",
         title_sel=".showcase-title a",
         price_sel=".showcase-price-new",
+        image_sel=".showcase-image img.lazy, .showcase-image img",
         timeout_ms=8000
     ),
     SiteConfig(
@@ -72,6 +77,7 @@ SITES: list[SiteConfig] = [
         result_item_sel = "li.column, div.pro, ul.list-ul li, div.listView ul li, li.catalog-item, div.product-item",
         title_sel       = "h3.productName, a.proName, h3.name, h3[class*='title'], h3",
         price_sel       = "ins, span.newPrice c, div.priceContainer ins, div.price span, span.new-price",
+        image_sel       = "div.imgBox img.lazy, div.proDetail img, img",
         timeout_ms      = 8000
     ),
     SiteConfig(
@@ -80,6 +86,7 @@ SITES: list[SiteConfig] = [
         result_item_sel = "li.productListContent-item, ul.productList li, div[data-test-id='product-card'], div.product-card",
         title_sel       = "h3[data-test-id='product-card-name'], h3, div.product-title",
         price_sel       = "div[data-test-id='price-current-price'], span.price, div.price-value, span.price-current-price",
+        image_sel       = "img[data-test-id='product-image'], img",
         timeout_ms      = 8000
     ),
     SiteConfig(
@@ -88,6 +95,7 @@ SITES: list[SiteConfig] = [
         result_item_sel = "tr.searchResultsItem, div.list-item",
         title_sel       = "a.classifiedTitle, h3.title",
         price_sel       = "td.searchResultsPriceValue div, span.price",
+        image_sel       = "td.searchResultsLargeThumbnail img, img",
         timeout_ms      = 8000
     ),
 ]
@@ -211,13 +219,20 @@ async def _scrape_one(cfg: SiteConfig, query: str, dyn_headers: dict, use_httpx:
                                 item = el.get('item', {}) if 'item' in el else el
                                 name = item.get('name', 'Ürün İsimsiz')
                                 price = None
+                                image_url = ""
                                 offers = item.get('offers', {})
                                 if isinstance(offers, dict): price = offers.get('price')
                                 elif isinstance(offers, list) and offers: price = offers[0].get('price')
                                 
+                                img_data = item.get('image', '')
+                                if isinstance(img_data, str): image_url = img_data
+                                elif isinstance(img_data, list) and img_data:
+                                    image_url = img_data[0] if isinstance(img_data[0], str) else img_data[0].get('url', '')
+                                elif isinstance(img_data, dict): image_url = img_data.get('url', '')
+
                                 if price:
                                     s_price_str = f"{price} ₺"
-                                    schema_results.append(SearchResult(cfg.name, True, part_name=name, price_str=s_price_str, price_numeric=parse_price(s_price_str), url=item.get('url', url), affiliate_url=generate_affiliate_url(item.get('url', url))))
+                                    schema_results.append(SearchResult(cfg.name, True, part_name=name, price_str=s_price_str, price_numeric=parse_price(s_price_str), url=item.get('url', url), affiliate_url=generate_affiliate_url(item.get('url', url)), image_url=image_url))
                             if len(schema_results) >= 3: break
                 except Exception: pass
         if schema_results:
@@ -252,7 +267,15 @@ async def _scrape_one(cfg: SiteConfig, query: str, dyn_headers: dict, use_httpx:
                                     p_url = p.get('url', '')
                                     if p_url and not p_url.startswith('http'):
                                         p_url = "https://www.hepsiburada.com" + p_url
-                                    hb_results.append(SearchResult(cfg.name, True, part_name=name, price_str=p_str, price_numeric=p_num, url=p_url or url, affiliate_url=generate_affiliate_url(p_url or url)))
+                                    
+                                    img_url = ""
+                                    img_list = p.get('imageUrls') or p.get('images', [])
+                                    if img_list and isinstance(img_list, list):
+                                        img_url = img_list[0].get('url', '') if isinstance(img_list[0], dict) else img_list[0]
+                                    elif p.get('image'): 
+                                        img_url = str(p.get('image'))
+
+                                    hb_results.append(SearchResult(cfg.name, True, part_name=name, price_str=p_str, price_numeric=p_num, url=p_url or url, affiliate_url=generate_affiliate_url(p_url or url), image_url=img_url))
                             except: continue
                     if hb_results:
                         return hb_results[:3]
@@ -271,7 +294,8 @@ async def _scrape_one(cfg: SiteConfig, query: str, dyn_headers: dict, use_httpx:
                     price_num = parse_price(price_str)
                     if title and price_num and price_num > 50:
                         cl_url = f"https://www.sahibinden.com{cl.get('url')}"
-                        shb_results.append(SearchResult(cfg.name, True, part_name=title, price_str=price_str, price_numeric=price_num, url=cl_url, affiliate_url=generate_affiliate_url(cl_url)))
+                        img_url = cl.get('thumbnailUrl', '') or cl.get('thumbnailUrl1', '')
+                        shb_results.append(SearchResult(cfg.name, True, part_name=title, price_str=price_str, price_numeric=price_num, url=cl_url, affiliate_url=generate_affiliate_url(cl_url), image_url=img_url))
                 if shb_results:
                     return shb_results[:3]
             except: pass
@@ -332,8 +356,15 @@ async def _scrape_one(cfg: SiteConfig, query: str, dyn_headers: dict, use_httpx:
                 from urllib.parse import urlparse
                 parsed_base = urlparse(cfg.base_search_url)
                 full_url = f"{parsed_base.scheme}://{parsed_base.netloc}{relative_url}"
-            elif not relative_url.startswith("http"):
                 full_url = url
+
+            image_url = ""
+            if cfg.image_sel:
+                img_el = safe_select(item, cfg.image_sel)
+                if img_el:
+                    image_url = img_el.get('data-original') or img_el.get('data-src') or img_el.get('src') or ""
+                    if image_url and image_url.startswith('//'):
+                        image_url = "https:" + image_url
 
             results_list.append(SearchResult(
                 site_name     = cfg.name,
@@ -342,7 +373,8 @@ async def _scrape_one(cfg: SiteConfig, query: str, dyn_headers: dict, use_httpx:
                 price_str     = price_raw,
                 price_numeric = price_num,
                 url           = full_url,
-                affiliate_url = generate_affiliate_url(full_url)
+                affiliate_url = generate_affiliate_url(full_url),
+                image_url     = image_url
             ))
 
         # Filter out junk results (Price sanity check > 50 TL and named items)

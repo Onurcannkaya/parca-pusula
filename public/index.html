@@ -1,361 +1,641 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#121212">
-    <meta name="description" content="ParçaPusula - Sivas Sanayi Özel Edisyonu">
-    <title>ParçaPusula | Sivas Sanayi</title>
-    
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="description" content="ParçaPusula - Premium Oto Yedek Parça Arama Motoru">
+    <title>ParçaPusula | Premium</title>
+
     <!-- PWA -->
     <link rel="manifest" href="/manifest.json">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23121212' width='100' height='100' rx='20'/><text x='50' y='65' font-size='50' text-anchor='middle' fill='%23FFB300'>⚙</text></svg>">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23121212' width='100' height='100' rx='20'/><text x='50' y='65' font-size='50' text-anchor='middle' fill='%23FFB300'>⚙</text></svg>">
-    
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23121212' width='100' height='100' rx='20'/><text x='50' y='65' font-size='50' text-anchor='middle' fill='%23FFB300'>⚙</text></svg>">
+    <link rel="apple-touch-icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23121212' width='100' height='100' rx='20'/><text x='50' y='65' font-size='50' text-anchor='middle' fill='%23FFB300'>⚙</text></svg>">
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;800&family=Inter:wght@400;500;600;800&display=swap"
+        rel="stylesheet">
+
     <style>
         :root {
-            --bg-dark: #121212;
-            --bg-card: #1E1E1E;
-            --amber: #FFB300;
-            --text-white: #E0E0E0;
-            --text-grey: #9E9E9E;
-            --green-neon: #00C853;
-            --red-err: #FF5252;
+            --bg-deep: #050505;
+            --bg-glass: rgba(20, 20, 20, 0.7);
+            --amber-glow: #FFB300;
+            --amber-hover: #FFC107;
+            --text-white: #F1F1F1;
+            --text-grey: #A0A0A0;
+            --green-neon: #00E676;
+            --red-err: #FF3D00;
+            --border-glass: rgba(255, 255, 255, 0.08);
         }
 
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            box-sizing: border-box;
         }
 
         body {
-            background-color: var(--bg-dark);
+            background-color: var(--bg-deep);
+            background-image:
+                radial-gradient(circle at 15% 50%, rgba(255, 179, 0, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(255, 255, 255, 0.02) 0%, transparent 50%);
             color: var(--text-white);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
         }
 
+        /* ── HEADER ── */
         header {
             width: 100%;
-            padding: 24px 16px;
-            background-color: var(--bg-card);
+            padding: 30px 20px;
             text-align: center;
-            border-bottom: 2px solid var(--amber);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(180deg, rgba(10, 10, 10, 0.9) 0%, rgba(5, 5, 5, 0) 100%);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border-glass);
         }
 
         header h1 {
-            color: var(--amber);
-            font-size: 28px;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--text-white);
+            font-size: 36px;
             font-weight: 800;
-            letter-spacing: 1px;
-            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 20px rgba(255, 179, 0, 0.4);
+            margin-bottom: 5px;
         }
-        
+
+        header h1 span {
+            color: var(--amber-glow);
+        }
+
         header p {
             color: var(--text-grey);
             font-size: 14px;
-            font-style: italic;
+            letter-spacing: 1px;
+            font-weight: 500;
+            text-transform: uppercase;
         }
 
+        /* ── MAIN CONTENT ── */
         main {
             width: 100%;
-            max-width: 600px;
-            padding: 24px 16px;
+            max-width: 1200px;
+            padding: 40px 20px;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            align-items: center;
+            gap: 40px;
         }
 
-        .search-container {
-            display: flex;
-            gap: 10px;
+        /* ── SEARCH BAR ── */
+        .search-wrapper {
             width: 100%;
+            max-width: 700px;
+            position: relative;
+            display: flex;
+            gap: 12px;
+            z-index: 10;
         }
 
         #searchInput {
             flex-grow: 1;
-            background-color: var(--bg-card);
-            border: 1px solid #333;
+            background: rgba(25, 25, 25, 0.8);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--border-glass);
             color: var(--text-white);
-            padding: 16px 20px;
-            border-radius: 12px;
-            font-size: 16px;
+            padding: 20px 25px;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             outline: none;
-            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
 
         #searchInput:focus {
-            border-color: var(--amber);
-            box-shadow: 0 0 0 2px rgba(255, 179, 0, 0.2);
+            border-color: var(--amber-glow);
+            box-shadow: 0 0 0 4px rgba(255, 179, 0, 0.15), 0 15px 35px rgba(0, 0, 0, 0.6);
+            transform: translateY(-2px);
         }
 
         #searchBtn {
-            background-color: var(--amber);
-            color: var(--bg-dark);
+            background: linear-gradient(135deg, var(--amber-glow), #FF8F00);
+            color: #000;
             border: none;
-            padding: 0 24px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
+            padding: 0 35px;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(255, 179, 0, 0.3);
         }
 
         #searchBtn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(255, 179, 0, 0.3);
-        }
-        
-        #searchBtn:active {
-            transform: translateY(0);
+            box-shadow: 0 15px 25px rgba(255, 179, 0, 0.4);
+            background: linear-gradient(135deg, var(--amber-hover), #FFA000);
         }
 
-        #loader {
+        #searchBtn:active {
+            transform: translateY(1px);
+            box-shadow: 0 5px 10px rgba(255, 179, 0, 0.2);
+        }
+
+        /* ── LOADER ── */
+        .loader-wrapper {
             display: none;
-            text-align: center;
-            padding: 40px 0;
-            color: var(--amber);
-            font-weight: 600;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 179, 0, 0.2);
+            border-top: 4px solid var(--amber-glow);
+            border-radius: 50%;
+            animation: spin 1s infinite linear;
+        }
+
+        .loader-text {
+            color: var(--amber-glow);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            letter-spacing: 2px;
             animation: pulse 1.5s infinite;
         }
 
-        @keyframes pulse {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
+        @keyframes pulse {
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* ── GRID RESULTS ── */
         #results {
             display: grid;
-            gap: 16px;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
             width: 100%;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.6s forwards cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
-        .card {
-            background-color: var(--bg-card);
-            border-radius: 16px;
-            padding: 20px;
-            border: 1px solid #333;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s ease;
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        
+
+        /* ── PRODUCT CARD ── */
+        .card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
         .card:hover {
-            transform: translateY(-2px);
-            border-color: #444;
+            transform: scale(1.03) translateY(-10px);
+            border-color: rgba(255, 179, 0, 0.4);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7), 0 0 20px rgba(255, 179, 0, 0.1);
         }
 
         .card.cheapest {
             border: 2px solid var(--green-neon);
-            box-shadow: 0 4px 15px rgba(0, 200, 83, 0.15);
-            position: relative;
+            box-shadow: 0 15px 35px rgba(0, 230, 118, 0.15);
         }
 
-        .badge {
+        .badge-cheapest {
             position: absolute;
-            top: -12px;
-            right: 20px;
-            background-color: var(--green-neon);
-            color: var(--bg-dark);
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
+            top: 15px;
+            right: 15px;
+            background: var(--green-neon);
+            color: #000;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
             font-weight: 800;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0, 230, 118, 0.4);
+            z-index: 2;
+        }
+
+        /* Image Wrapper */
+        .card-img-wrapper {
+            width: 100%;
+            height: 220px;
+            background: rgba(255, 255, 255, 0.02);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 1px solid var(--border-glass);
+            padding: 10px;
+        }
+
+        .card-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            transition: transform 0.5s ease;
+            border-radius: 10px;
+        }
+
+        .card:hover .card-img {
+            transform: scale(1.08);
+        }
+
+        /* General Fallback Styling for when an image is missing */
+        .fallback-logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: rgba(255, 255, 255, 0.15);
+            font-family: 'Orbitron', sans-serif;
             text-transform: uppercase;
+            letter-spacing: 2px;
+            transform: rotate(-10deg);
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* Dedicated Site Logos using CSS classes */
+        .logo-n11 {
+            color: #E30A17;
+            opacity: 0.6;
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: 4px;
+        }
+
+        .logo-hepsiburada {
+            color: #FF6000;
+            opacity: 0.6;
+            font-size: 26px;
+        }
+
+        .logo-sahibinden {
+            color: #FFE800;
+            opacity: 0.6;
+            font-size: 24px;
+        }
+
+        .logo-onlineyedek {
+            color: #00B1A0;
+            opacity: 0.6;
+            font-size: 22px;
+        }
+
+        .logo-parcadeposu {
+            color: #2196F3;
+            opacity: 0.6;
+            font-size: 24px;
+        }
+
+        .logo-alloyedek {
+            color: #9C27B0;
+            opacity: 0.6;
+            font-size: 22px;
+        }
+
+        /* Card Body */
+        .card-body {
+            padding: 25px 20px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .vendor-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-grey);
+            margin-bottom: 15px;
+            align-self: flex-start;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .vendor-badge span {
+            font-size: 14px;
         }
 
         .card-title {
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 500;
             color: var(--text-white);
-            margin-bottom: 12px;
-            line-height: 1.4;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            flex-grow: 1;
+        }
+
+        .price-wrapper {
+            margin-bottom: 25px;
         }
 
         .card-price {
-            font-size: 24px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
             font-weight: 800;
-            color: var(--amber);
-            margin-bottom: 8px;
-        }
-
-        .card-vendor {
-            font-size: 14px;
-            color: var(--text-grey);
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            color: var(--amber-glow);
+            text-shadow: 0 0 15px rgba(255, 179, 0, 0.3);
         }
 
         .card-btn {
-            display: block;
             width: 100%;
-            padding: 14px;
-            background-color: #333;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.05);
             color: var(--text-white);
             text-align: center;
             text-decoration: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-weight: 600;
-            transition: background-color 0.2s ease;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            letter-spacing: 1px;
+            text-transform: uppercase;
         }
 
         .card-btn:hover {
-            background-color: #444;
-        }
-        
-        .card-btn.active {
-            background-color: var(--amber);
-            color: var(--bg-dark);
+            background: var(--amber-glow);
+            color: #000;
+            border-color: var(--amber-glow);
+            box-shadow: 0 5px 15px rgba(255, 179, 0, 0.3);
         }
 
-        .card-btn.active:hover {
-            background-color: #ffc13b;
+        .error-card {
+            background: rgba(255, 61, 0, 0.05);
+            border-color: rgba(255, 61, 0, 0.2);
         }
 
-        .error-msg {
+        .error-card .card-img-wrapper {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .error-card .fallback-logo {
+            color: rgba(255, 61, 0, 0.2);
+        }
+
+        .error-card .card-price {
             color: var(--red-err);
-            text-align: center;
-            padding: 20px;
-            background-color: rgba(255, 82, 82, 0.1);
-            border-radius: 12px;
-            border: 1px solid rgba(255, 82, 82, 0.3);
-        }
-        
-        .no-data {
-            color: var(--text-grey);
+            text-shadow: none;
             font-size: 20px;
+        }
+
+        .error-card .card-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* ── FOOTER CREDIT ── */
+        footer {
+            width: 100%;
+            padding: 30px;
+            text-align: center;
+            margin-top: auto;
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .credit {
+            color: var(--text-grey);
+            font-size: 13px;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .credit a {
+            color: var(--amber-glow);
+            font-weight: 800;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 2px;
+            text-decoration: none;
+            transition: text-shadow 0.3s ease;
+        }
+
+        .credit a:hover {
+            text-shadow: 0 0 10px rgba(255, 179, 0, 0.6);
+        }
+
+        @media (max-width: 768px) {
+            .search-wrapper {
+                flex-direction: column;
+            }
+
+            #searchInput {
+                width: 100%;
+                padding: 18px;
+                font-size: 16px;
+            }
+
+            #searchBtn {
+                width: 100%;
+                padding: 18px;
+                font-size: 16px;
+            }
+
+            header h1 {
+                font-size: 28px;
+            }
+
+            #results {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <header>
-        <h1>⚙ ParçaPusula</h1>
-        <p>Sivas Sanayi Özel Edisyonu</p>
+        <h1><span>Parça</span>Pusula</h1>
+        <p>Premium Oto Yedek Parça Motoru</p>
     </header>
 
     <main>
-        <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Parça adı veya kodu girin..." autocomplete="off">
-            <button id="searchBtn">Ara</button>
+        <div class="search-wrapper">
+            <input type="text" id="searchInput" placeholder="Parça adı, OE kodu veya marka girin..." autocomplete="off">
+            <button id="searchBtn">SİSTEMDE ARA</button>
         </div>
 
-        <div id="loader">Kapsamlı arama yapılıyor, lütfen bekleyin...</div>
-        
+        <div class="loader-wrapper" id="loader">
+            <div class="spinner"></div>
+            <div class="loader-text">VERİLER ÇEKİLİYOR...</div>
+        </div>
+
         <div id="results"></div>
     </main>
 
+    <footer>
+        <div class="credit">Tasarım & Algoritma: <a href="https://github.com/Onurcannkaya" target="_blank">GELİŞTİRİCİ
+                ONURCAN KAYA</a></div>
+    </footer>
+
     <script>
-        // Service Worker Kaydı (PWA)
+        // Service Worker (PWA)
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('SW Registered!', reg))
-                    .catch(err => console.error('SW Registration Failed', err));
-            });
+            window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => { }));
         }
 
-        const searchInput = document.getElementById('searchInput');
-        const searchBtn = document.getElementById('searchBtn');
-        const resultsDiv = document.getElementById('results');
-        const loader = document.getElementById('loader');
+        const SE = document.getElementById('searchInput');
+        const SB = document.getElementById('searchBtn');
+        const RD = document.getElementById('results');
+        const LD = document.getElementById('loader');
 
-        // Enter tuşu desteği
-        searchInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                performSearch();
-            }
-        });
+        SE.addEventListener('keypress', e => e.key === 'Enter' && search());
+        SB.addEventListener('click', search);
 
-        searchBtn.addEventListener('click', performSearch);
+        // Siteye özgü Icon ve Css class dönen Fallback Generator
+        function getVendorFallback(siteName) {
+            const sn = siteName.toLowerCase();
+            if (sn.includes("n11")) return { icon: "🛒", css: "logo-n11", text: "n11.com" };
+            if (sn.includes("hepsiburada")) return { icon: "🛍️", css: "logo-hepsiburada", text: "Hepsiburada" };
+            if (sn.includes("sahibinden")) return { icon: "🚙", css: "logo-sahibinden", text: "Sahibinden" };
+            if (sn.includes("onlineyedek")) return { icon: "⚙️", css: "logo-onlineyedek", text: "Online Yedek" };
+            if (sn.includes("parcadepo")) return { icon: "📦", css: "logo-parcadeposu", text: "Parça Deposu" };
+            if (sn.includes("alloyedek")) return { icon: "📞", css: "logo-alloyedek", text: "Allo Yedek" };
+            return { icon: "🏢", css: "", text: siteName.toUpperCase() };
+        }
 
-        async function performSearch() {
-            const query = searchInput.value.trim();
-            if (!query) return;
+        async function search() {
+            const q = SE.value.trim();
+            if (!q) return;
 
-            // UI Reset
-            resultsDiv.innerHTML = '';
-            loader.style.display = 'block';
-            searchBtn.disabled = true;
-            searchBtn.style.opacity = '0.5';
+            RD.innerHTML = '';
+            RD.style.animation = 'none'; // Animasyon Reset
+            LD.style.display = 'flex';
+            SB.disabled = true;
+            SB.style.opacity = '0.5';
 
             try {
-                // API İsteği
-                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-                
-                if (!response.ok) {
-                    throw new Error(`Sunucu Hatası: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                
-                if (data.status === 'error') {
-                    throw new Error(data.message || 'Bilinmeyen bir hata oluştu');
-                }
-
-                renderResults(data.data);
-
-            } catch (error) {
-                resultsDiv.innerHTML = `<div class="error-msg">❌ Hata: ${error.message}</div>`;
+                const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+                if (!res.ok) throw new Error("Ağ/Sunucu Hatası");
+                const { data, status, message } = await res.json();
+                if (status === 'error') throw new Error(message || "Sistem Hatası");
+                render(data);
+            } catch (err) {
+                RD.innerHTML = `<div style="color:var(--text-white); text-align:center; width:100%; grid-column:1/-1; padding:30px; background:rgba(255,61,0,0.15); border-radius:15px; border:1px solid rgba(255,61,0,0.3); font-size:16px;">⚠️ Sunucu Hatası: ${err.message}. Lütfen biraz bekleyip tekrar deneyin.</div>`;
             } finally {
-                loader.style.display = 'none';
-                searchBtn.disabled = false;
-                searchBtn.style.opacity = '1';
+                LD.style.display = 'none';
+                SB.disabled = false;
+                SB.style.opacity = '1';
+                setTimeout(() => { RD.style.animation = 'fadeIn 0.6s forwards cubic-bezier(0.2, 0.8, 0.2, 1)'; }, 10);
             }
         }
 
-        function renderResults(results) {
-            if (!results || results.length === 0) {
-                resultsDiv.innerHTML = '<div class="error-msg" style="color:var(--text-grey); border-color:#333; background:transparent;">Sonuç bulunamadı. Lütfen başka bir terim deneyin.</div>';
+        function render(items) {
+            if (!items || !items.length) {
+                RD.innerHTML = '<div style="color:var(--text-grey); text-align:center; width:100%; grid-column:1/-1; padding:50px; font-size:18px; font-weight:500;">Uygun fiyatlı yedek parça bulunamadı. Lütfen kelimeleri değiştirin.</div>';
                 return;
             }
 
-            // Sadece başarılı ve fiyatı olanları bulalım (En ucuzu hesaplamak için)
-            const successfulResults = results.filter(r => r.success && r.price_numeric !== null);
-            
-            let cheapestPrice = null;
-            if (successfulResults.length > 0) {
-                cheapestPrice = Math.min(...successfulResults.map(r => r.price_numeric));
-            }
+            const valids = items.filter(r => r.success && r.price_numeric);
+            const cheapest = valids.length ? Math.min(...valids.map(r => r.price_numeric)) : null;
 
-            let htmlStr = '';
+            let html = '';
+            items.forEach((item, index) => {
+                const isSuccess = item.success;
+                const isCheapest = isSuccess && item.price_numeric === cheapest;
 
-            results.forEach(res => {
-                const isSuccess = res.success;
-                const isCheapest = isSuccess && res.price_numeric === cheapestPrice;
-                
-                let cardClass = 'card';
-                if (isCheapest) cardClass += ' cheapest';
+                const title = isSuccess ? item.part_name : item.error_msg;
+                const price = isSuccess ? item.price_str : "━";
+                const url = (isSuccess && item.url) ? (item.affiliate_url || item.url) : "#";
+                const vendorName = item.site_name || "Sistem";
+                const vendorInfo = getVendorFallback(vendorName);
 
-                const title = isSuccess ? res.part_name : (res.status || 'Hata Oluştu');
-                const priceStr = isSuccess ? res.price_str : '<span class="no-data">Stokta Yok</span>';
-                const buttonClass = isSuccess ? 'card-btn active' : 'card-btn';
-                const buttonText = isSuccess ? 'Siteye Git 🚀' : 'Bulunamadı';
-                const url = (isSuccess && (res.affiliate_url || res.url)) ? (res.affiliate_url || res.url) : '#';
+                // İmaj var mı? Yoksa veya hatalıysa Fallback Logo göster
+                const hasImg = item.image_url && item.image_url.length > 5;
+                const fallbackHTML = `<div class="fallback-logo ${vendorInfo.css}">${vendorInfo.text}</div>`;
 
-                htmlStr += `
-                    <div class="${cardClass}">
-                        ${isCheapest ? '<div class="badge">EFSANE FİYAT</div>' : ''}
-                        <div class="card-title">${title}</div>
-                        <div class="card-price">${priceStr}</div>
-                        <div class="card-vendor">🏢 ${res.site || 'Bilinmeyen Satıcı'}</div>
-                        <a href="${url}" target="_blank" class="${buttonClass}" ${!isSuccess ? 'onclick="return false;" style="opacity:0.5; cursor:not-allowed;"' : ''}>
-                            ${buttonText}
-                        </a>
+                // Onerror event ile imaj kırık çıkarsa fallback'i bas
+                let imgHTML = fallbackHTML;
+                if (isSuccess && hasImg) {
+                    const safeUrl = item.image_url.replace(/"/g, '&quot;');
+                    imgHTML = `<img src="${safeUrl}" alt="${vendorName} Urunu" class="card-img" loading="lazy" onerror="this.outerHTML='<div class=\\'fallback-logo ${vendorInfo.css}\\'>${vendorInfo.text}</div>'">`;
+                }
+
+                const cardClasses = `card ${isCheapest ? 'cheapest' : ''} ${!isSuccess ? 'error-card' : ''}`;
+
+                html += `
+                    <div class="${cardClasses}" style="animation-delay: ${index * 0.05}s">
+                        ${isCheapest ? '<div class="badge-cheapest">🎯 EN UCUZ</div>' : ''}
+                        
+                        <div class="card-img-wrapper">
+                            ${imgHTML}
+                        </div>
+                        
+                        <div class="card-body">
+                            <div class="vendor-badge">
+                                <span>${vendorInfo.icon}</span> ${vendorName}
+                            </div>
+                            
+                            <h3 class="card-title" title="${title}">${title}</h3>
+                            
+                            <div class="price-wrapper">
+                                <span class="card-price">${price}</span>
+                            </div>
+                            
+                            <a href="${url}" target="_blank" class="card-btn" ${!isSuccess ? 'onclick="return false;" style="opacity:0.3; cursor:not-allowed;"' : ''}>
+                                ${isSuccess ? 'SİTEYE GİT ➔' : 'BLOKE EDİLDİ'}
+                            </a>
+                        </div>
                     </div>
                 `;
             });
-
-            resultsDiv.innerHTML = htmlStr;
+            RD.innerHTML = html;
         }
     </script>
 </body>
+
 </html>
