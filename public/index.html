@@ -437,6 +437,53 @@
             transform: none;
         }
 
+        /* ── LANDING INFO ── */
+        .landing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            width: 100%;
+            margin-top: 20px;
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        .landing-card {
+            background: rgba(20, 20, 20, 0.4);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .landing-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4), 0 0 15px rgba(255,179,0,0.05);
+            border-color: rgba(255,179,0,0.2);
+        }
+
+        .l-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255,179,0,0.3);
+            display: inline-block;
+        }
+
+        .landing-card h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--amber-glow);
+            font-size: 18px;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .landing-card p {
+            color: var(--text-grey);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
         /* ── FOOTER CREDIT ── */
         footer {
             width: 100%;
@@ -509,6 +556,24 @@
             <button id="searchBtn">SİSTEMDE ARA</button>
         </div>
 
+        <div id="landingInfo" class="landing-grid">
+            <div class="landing-card">
+                <div class="l-icon">⚡</div>
+                <h3>Işık Hızında Tarama</h3>
+                <p>Parça kodunu veya adını girin; sistemimiz Türkiye'nin en büyük yedek parça ağlarını eşzamanlı olarak tarasın.</p>
+            </div>
+            <div class="landing-card">
+                <div class="l-icon">🎯</div>
+                <h3>En Ucuzu Yakala</h3>
+                <p>Geliştirdiğimiz algoritma, en uygun fiyatlı ürünü sizin için mercek altına alır ve EN UCUZ etiketiyle sunar.</p>
+            </div>
+            <div class="landing-card">
+                <div class="l-icon">🛡️</div>
+                <h3>Profesyonel Filtre</h3>
+                <p>Bozuk verileri ve alakasız ürünleri otomatik eler. Sadece güvenilir stoklara sahip satıcılar listelenir.</p>
+            </div>
+        </div>
+
         <div class="loader-wrapper" id="loader">
             <div class="spinner"></div>
             <div class="loader-text">VERİLER ÇEKİLİYOR...</div>
@@ -552,6 +617,8 @@
             const q = SE.value.trim();
             if (!q) return;
 
+            document.getElementById('landingInfo').style.display = 'none';
+
             RD.innerHTML = '';
             RD.style.animation = 'none'; // Animasyon Reset
             LD.style.display = 'flex';
@@ -575,16 +642,18 @@
         }
 
         function render(items) {
-            if (!items || !items.length) {
-                RD.innerHTML = '<div style="color:var(--text-grey); text-align:center; width:100%; grid-column:1/-1; padding:50px; font-size:18px; font-weight:500;">Uygun fiyatlı yedek parça bulunamadı. Lütfen kelimeleri değiştirin.</div>';
+            // Sadece başarılı ve fiyatı olanları filtrele. Blocklanmış/hata vermiş siteler UI'a yansımaz.
+            const valids = items ? items.filter(r => r.success && r.price_numeric) : [];
+
+            if (!valids.length) {
+                RD.innerHTML = '<div style="color:var(--text-grey); text-align:center; width:100%; grid-column:1/-1; padding:50px; font-size:18px; font-weight:500;">Uygun fiyatlı yedek parça bulunamadı veya satıcılar yanıt vermedi. Lütfen kelimeleri değiştirin.</div>';
                 return;
             }
 
-            const valids = items.filter(r => r.success && r.price_numeric);
-            const cheapest = valids.length ? Math.min(...valids.map(r => r.price_numeric)) : null;
+            const cheapest = Math.min(...valids.map(r => r.price_numeric));
 
             let html = '';
-            items.forEach((item, index) => {
+            valids.forEach((item, index) => {
                 const isSuccess = item.success;
                 const isCheapest = isSuccess && item.price_numeric === cheapest;
 
