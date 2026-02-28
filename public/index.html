@@ -596,13 +596,13 @@
 
                 // İmaj var mı? Yoksa veya hatalıysa Fallback Logo göster
                 const hasImg = item.image_url && item.image_url.length > 5;
-                const fallbackHTML = `<div class="fallback-logo ${vendorInfo.css}">${vendorInfo.text}</div>`;
+                const fallbackHTML = `<div class="fallback-logo" style="color: rgba(255,255,255,0.05); font-size: 64px; transform: none; display: flex; align-items: center; justify-content: center; height: 100%;">⚙️</div>`;
 
                 // Onerror event ile imaj kırık çıkarsa fallback'i bas
                 let imgHTML = fallbackHTML;
                 if (isSuccess && hasImg) {
                     const safeUrl = item.image_url.replace(/"/g, '&quot;');
-                    imgHTML = `<img src="${safeUrl}" alt="${vendorName} Urunu" class="card-img" loading="lazy" onerror="this.outerHTML='<div class=\\'fallback-logo ${vendorInfo.css}\\'>${vendorInfo.text}</div>'">`;
+                    imgHTML = `<img src="${safeUrl}" alt="${vendorName} Urunu" class="card-img" loading="lazy" onerror="this.outerHTML='<div class=\\'fallback-logo\\' style=\\'color: rgba(255,255,255,0.05); font-size: 64px; transform: none; display: flex; align-items: center; justify-content: center; height: 100%;\\'>⚙️</div>'">`;
                 }
 
                 const cardClasses = `card ${isCheapest ? 'cheapest' : ''} ${!isSuccess ? 'error-card' : ''}`;

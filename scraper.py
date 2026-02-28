@@ -433,10 +433,13 @@ async def _scrape_one_with_limit(cfg: SiteConfig, query: str, dyn_headers: dict)
     delay = random.uniform(0.2, 0.5)
     await asyncio.sleep(delay)
     
+    # Her bir görevin (task) kendi izole headers'ı olması lazım, yarış durumu (race condition) olmasın
+    isolated_headers = dyn_headers.copy()
+    
     # Sadece 1 kez Katman 1'i dene, Vercel'de çok fazla denemeye vaktimiz yok!
     if CURL_CFFI_AVAILABLE:
         try:
-            res = await _scrape_one(cfg, query, dyn_headers, use_httpx=False)
+            res = await _scrape_one(cfg, query, isolated_headers, use_httpx=False)
             for r in res: r.engine = "Stealth (curl_cffi)"
             return res
         except Exception as e:
@@ -444,7 +447,7 @@ async def _scrape_one_with_limit(cfg: SiteConfig, query: str, dyn_headers: dict)
 
     # Hızlı Katman 2 (HTTPX HTTP/2 Fallback)
     try:
-        res2 = await _scrape_one(cfg, query, dyn_headers, use_httpx=True)
+        res2 = await _scrape_one(cfg, query, isolated_headers, use_httpx=True)
         for r in res2: r.engine = "Stealth (httpx)"
         return res2
     except Exception as fallback_err:
@@ -452,7 +455,7 @@ async def _scrape_one_with_limit(cfg: SiteConfig, query: str, dyn_headers: dict)
         
     # Sona kalan Katman 3 (ScraperAPI Kriz Motoru)
     try:
-        res3 = await _scrape_one(cfg, query, dyn_headers, use_scraperapi=True)
+        res3 = await _scrape_one(cfg, query, isolated_headers, use_scraperapi=True)
         for r in res3: r.engine = "ScraperAPI"
         return res3
     except Exception as api_err:

@@ -1,0 +1,8 @@
+OnlineYedekParc | Success: False | Price: None | Error: Fiyat Alınamadı veya Engellendi
+AlloYedekParca  | Success: False | Price: None | Error: Site Koruma Altında
+ParcaDeposu     | Success: False | Price: None | Error: Fiyat Alınamadı veya Engellendi
+n11             | Success: True  | Price: 116.0 | Error: 
+n11             | Success: True  | Price: 89.9 | Error: 
+n11             | Success: True  | Price: 80.91 | Error: 
+Hepsiburada     | Success: False | Price: None | Error: Fiyat Alınamadı veya Engellendi
+Sahibinden      | Success: False | Price: None | Error: Erişim Engellendi (Koruma)
