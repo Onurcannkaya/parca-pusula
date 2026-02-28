@@ -50,7 +50,7 @@ SITES: list[SiteConfig] = [
         result_item_sel = "div.showcase, div.ProductItem, div.product-item, div.product-card, div.card",
         title_sel       = "div.showcase-title a, div.productName a, div.product-title a, h3.name, a.title, div.product-name a, h3.product-name a",
         price_sel       = "div.showcase-price span, div.discountPrice span, div.product-price span, span.price, div.price, div.current-price, span.current-price",
-        image_sel       = "img.product-image, img.lazy, img",
+        image_sel       = "img.object-fit-contain, img.product-image, img.lazy",
         timeout_ms      = 8000
     ),
     SiteConfig(
@@ -59,7 +59,7 @@ SITES: list[SiteConfig] = [
         result_item_sel=".product-item, .product-card",
         title_sel="a.product-name, h3.product-title a",
         price_sel=".product-price, .price",
-        image_sel="img.product-image, img",
+        image_sel="img.product-image, img.lazyload",
         timeout_ms=8000
     ),
     SiteConfig(
@@ -68,7 +68,7 @@ SITES: list[SiteConfig] = [
         result_item_sel=".showcase",
         title_sel=".showcase-title a",
         price_sel=".showcase-price-new",
-        image_sel=".showcase-image img.lazy, .showcase-image img",
+        image_sel=".showcase-image img.lazy, .showcase-image img, img.lazyload",
         timeout_ms=8000
     ),
     SiteConfig(
@@ -77,7 +77,7 @@ SITES: list[SiteConfig] = [
         result_item_sel = "li.column, div.pro, ul.list-ul li, div.listView ul li, li.catalog-item, div.product-item",
         title_sel       = "h3.productName, a.proName, h3.name, h3[class*='title'], h3",
         price_sel       = "ins, span.newPrice c, div.priceContainer ins, div.price span, span.new-price",
-        image_sel       = "div.imgBox img.lazy, div.proDetail img, img",
+        image_sel       = "div.imgBox img.lazy, div.imgBox img, div.proDetail img",
         timeout_ms      = 8000
     ),
     SiteConfig(
@@ -95,7 +95,7 @@ SITES: list[SiteConfig] = [
         result_item_sel = "tr.searchResultsItem, div.list-item",
         title_sel       = "a.classifiedTitle, h3.title",
         price_sel       = "td.searchResultsPriceValue div, span.price",
-        image_sel       = "td.searchResultsLargeThumbnail img, img",
+        image_sel       = "td.searchResultsLargeThumbnail img",
         timeout_ms      = 8000
     ),
 ]
@@ -378,6 +378,10 @@ async def _scrape_one(cfg: SiteConfig, query: str, dyn_headers: dict, use_httpx:
                     if image_url and image_url.startswith('//'):
                         image_url = "https:" + image_url
             
+            # Eğer ürün görseli yerine icon/SVG gibi arayüz ögeleri gelirse bunları engelle
+            if image_url and (image_url.lower().endswith('.svg') or "icon" in image_url.lower()):
+                image_url = ""
+
             if not image_url:
                 image_url = "https://via.placeholder.com/150/1E1E1E/FFB300?text=Gorsel+Yok"
 
@@ -423,9 +427,28 @@ async def _scrape_one(cfg: SiteConfig, query: str, dyn_headers: dict, use_httpx:
                         seller_match = re.search(r'(?:seller|store|magaza)[^>]*>([^<]+)<', context, re.IGNORECASE)
                         if seller_match:
                             seller_name = f" ({seller_match.group(1).strip()})"
+                            
+                        # Resim tahmini: Fiyatın ±2500 karakter civarındaki <img> etiketlerini kontrol et
+                        img_start = max(0, match.start() - 2500)
+                        img_end = min(len(response.text), match.end() + 2500)
+                        img_context = response.text[img_start:img_end]
+                        img_matches = re.findall(r'<img[^>]+(?:data-src|data-original|src)=["\']([^"\']+)["\']', img_context, re.I)
+                        
+                        # Ayrıca srcset içinde arama (örneğin N11 src kullanmayabiliyor)
+                        srcset_matches = re.findall(r'<img[^>]+srcset=["\']([^"\',]+)', img_context, re.I)
+                        img_matches.extend([s.split(' ')[0] for s in srcset_matches])
+                        
+                        best_img = ""
+                        for im in img_matches:
+                            if ".svg" not in im.lower() and "icon" not in im.lower() and "logo" not in im.lower() and "base64" not in im.lower() and len(im) > 10:
+                                best_img = im
+                                if best_img.startswith('//'): best_img = "https:" + best_img
+                                break
+                        if not best_img:
+                            best_img = "https://via.placeholder.com/150/1E1E1E/FFB300?text=Gorsel+Yok"
                         
                         part_title = f"Hassas Fiyat Yakalama{seller_name}"
-                        found_res.append(SearchResult(cfg.name, True, part_name=part_title, price_str=clean_raw, price_numeric=p_num, url=url, affiliate_url=generate_affiliate_url(url)))
+                        found_res.append(SearchResult(cfg.name, True, part_name=part_title, price_str=clean_raw, price_numeric=p_num, url=url, affiliate_url=generate_affiliate_url(url), image_url=best_img))
                     if len(found_res) >= 3: break
                 if found_res: return found_res
             return [SearchResult(cfg.name, False, error_msg="Fiyat Ayıklanamadı")]

@@ -1,0 +1,12 @@
+OnlineYedekParca | img: https://storage.googleapis.com/download/storage/v1/b/oyp-static/o/images%2Fproducts%2F617%2Fa492d6c2-8518-400b-8e78-ea02deb9f9ac-thumb.jpg?generation=1686410124884930&alt=media
+OnlineYedekParca | img: https://storage.googleapis.com/download/storage/v1/b/oyp-static/o/images%2Fproducts%2F618%2F524de8c0-4147-4ede-a0c1-903802079ce2-thumb.jpg?generation=1686410125509879&alt=media
+OnlineYedekParca | img: https://storage.googleapis.com/download/storage/v1/b/oyp-static/o/images%2Fproducts%2F620%2F12dd12ad-7cca-40fb-946d-7b8de4f97d49-thumb.jpg?generation=1686410213317189&alt=media
+AlloYedekParca  | err: Site Koruma Altında
+ParcaDeposu     | img: https://via.placeholder.com/150/1E1E1E/FFB300?text=Gorsel+Yok
+ParcaDeposu     | img: https://via.placeholder.com/150/1E1E1E/FFB300?text=Gorsel+Yok
+ParcaDeposu     | img: https://via.placeholder.com/150/1E1E1E/FFB300?text=Gorsel+Yok
+n11             | img: https://via.placeholder.com/150/1E1E1E/FFB300?text=Gorsel+Yok
+n11             | img: https://via.placeholder.com/150/1E1E1E/FFB300?text=Gorsel+Yok
+n11             | img: https://via.placeholder.com/150/1E1E1E/FFB300?text=Gorsel+Yok
+Hepsiburada     | err: Fiyat Alınamadı veya Engellendi
+Sahibinden      | err: Erişim Engellendi (Koruma)
