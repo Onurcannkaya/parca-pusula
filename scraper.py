@@ -279,19 +279,33 @@ async def _scrape_one(cfg: SiteConfig, query: str, dyn_headers: dict, use_httpx:
         if not items:
             print(f"[{cfg.name}] UYARI: Ürün kartı (item) bulunamadı. Denediğim selectorlar: '{cfg.result_item_sel}'")
             
-            # Kapsamlı (Çoklu) Regex Fallback (₺ ve TL Taraması)
+            # Kapsamlı (Çoklu) Regex Fallback (₺ ve TL Taraması + Satıcı Tahmini)
             import re
-            m = re.findall(r'([\d\.,]+)\s*[₺|TL]', response.text)
-            if not m:
-                m = re.findall(r'[₺|TL]\s*([\d\.,]+)', response.text)
-            if m:
+            m = re.finditer(r'([\d\.,]+)\s*[₺|TL]', response.text)
+            matches = list(m)
+            if not matches:
+                m = re.finditer(r'[₺|TL]\s*([\d\.,]+)', response.text)
+                matches = list(m)
+            
+            if matches:
                 print(f"[{cfg.name}] UYARI: Tüm Selector/JSON boşa düştü ama Regex Fallback çalıştı!")
                 found_res = []
-                for price_raw in m:
+                for match in matches:
+                    price_raw = match.group(1)
                     clean_raw = str(price_raw).strip() + " ₺"
                     p_num = parse_price(clean_raw)
                     if p_num and p_num > 50:
-                        found_res.append(SearchResult(cfg.name, True, part_name="Hassas Fiyat Yakalama", price_str=clean_raw, price_numeric=p_num, url=url, affiliate_url=generate_affiliate_url(url)))
+                        # Satıcı tahmini (Fiyatın geçtiği yerden geriye doğru 200 karakterde satıcı/dükkan adı ara)
+                        start_idx = max(0, match.start() - 200)
+                        context = response.text[start_idx:match.start()]
+                        seller_name = ""
+                        # Basit bir satıcı class/title varsayımı
+                        seller_match = re.search(r'(?:seller|store|magaza)[^>]*>([^<]+)M', context, re.IGNORECASE)
+                        if seller_match:
+                            seller_name = f" ({seller_match.group(1).strip()})"
+                        
+                        part_title = f"Hassas Fiyat Yakalama{seller_name}"
+                        found_res.append(SearchResult(cfg.name, True, part_name=part_title, price_str=clean_raw, price_numeric=p_num, url=url, affiliate_url=generate_affiliate_url(url)))
                     if len(found_res) >= 3: break
                 if found_res: return found_res
             return [SearchResult(cfg.name, False, error_msg="Fiyat Ayıklanamadı")]
@@ -338,19 +352,33 @@ async def _scrape_one(cfg: SiteConfig, query: str, dyn_headers: dict, use_httpx:
             hatali_selector = cfg.title_sel + " / " + cfg.price_sel
             print(f"[{cfg.name}] HATA: Kartlar bulundu ancak içlerinde element eşleşmedi veya kriter uymadı. Selector: '{hatali_selector}'")
             
-            # Kapsamlı (Çoklu) Regex Fallback (₺ ve TL Taraması)
+            # Kapsamlı (Çoklu) Regex Fallback (₺ ve TL Taraması + Satıcı Tahmini)
             import re
-            m = re.findall(r'([\d\.,]+)\s*[₺|TL]', response.text)
-            if not m:
-                m = re.findall(r'[₺|TL]\s*([\d\.,]+)', response.text)
-            if m:
+            m = re.finditer(r'([\d\.,]+)\s*[₺|TL]', response.text)
+            matches = list(m)
+            if not matches:
+                m = re.finditer(r'[₺|TL]\s*([\d\.,]+)', response.text)
+                matches = list(m)
+            
+            if matches:
                 print(f"[{cfg.name}] UYARI: Kart Parse boşa düştü ama Regex Fallback çalıştı!")
                 found_res = []
-                for price_raw in m:
+                for match in matches:
+                    price_raw = match.group(1)
                     clean_raw = str(price_raw).strip() + " ₺"
                     p_num = parse_price(clean_raw)
                     if p_num and p_num > 50:
-                        found_res.append(SearchResult(cfg.name, True, part_name="Hassas Fiyat Yakalama", price_str=clean_raw, price_numeric=p_num, url=url, affiliate_url=generate_affiliate_url(url)))
+                        # Satıcı tahmini (Fiyatın geçtiği yerden geriye doğru 200 karakterde satıcı/dükkan adı ara)
+                        start_idx = max(0, match.start() - 200)
+                        context = response.text[start_idx:match.start()]
+                        seller_name = ""
+                        # Basit bir satıcı class/title varsayımı
+                        seller_match = re.search(r'(?:seller|store|magaza)[^>]*>([^<]+)<', context, re.IGNORECASE)
+                        if seller_match:
+                            seller_name = f" ({seller_match.group(1).strip()})"
+                        
+                        part_title = f"Hassas Fiyat Yakalama{seller_name}"
+                        found_res.append(SearchResult(cfg.name, True, part_name=part_title, price_str=clean_raw, price_numeric=p_num, url=url, affiliate_url=generate_affiliate_url(url)))
                     if len(found_res) >= 3: break
                 if found_res: return found_res
             return [SearchResult(cfg.name, False, error_msg="Fiyat Ayıklanamadı")]
