@@ -281,10 +281,10 @@ async def _scrape_one(cfg: SiteConfig, query: str, dyn_headers: dict, use_httpx:
             
             # Kapsamlı (Çoklu) Regex Fallback (₺ ve TL Taraması + Satıcı Tahmini)
             import re
-            m = re.finditer(r'([\d\.,]+)\s*[₺|TL]', response.text)
+            m = re.finditer(r'\b([1-9][\d\.,]*)\s*(?:₺|TL|tl)\b', response.text, re.IGNORECASE)
             matches = list(m)
             if not matches:
-                m = re.finditer(r'[₺|TL]\s*([\d\.,]+)', response.text)
+                m = re.finditer(r'\b(?:₺|TL|tl)\s*([1-9][\d\.,]*)\b', response.text, re.IGNORECASE)
                 matches = list(m)
             
             if matches:
@@ -300,7 +300,7 @@ async def _scrape_one(cfg: SiteConfig, query: str, dyn_headers: dict, use_httpx:
                         context = response.text[start_idx:match.start()]
                         seller_name = ""
                         # Basit bir satıcı class/title varsayımı
-                        seller_match = re.search(r'(?:seller|store|magaza)[^>]*>([^<]+)M', context, re.IGNORECASE)
+                        seller_match = re.search(r'(?:seller|store|magaza)[^>]*>([^<]+)<', context, re.IGNORECASE)
                         if seller_match:
                             seller_name = f" ({seller_match.group(1).strip()})"
                         
@@ -354,10 +354,10 @@ async def _scrape_one(cfg: SiteConfig, query: str, dyn_headers: dict, use_httpx:
             
             # Kapsamlı (Çoklu) Regex Fallback (₺ ve TL Taraması + Satıcı Tahmini)
             import re
-            m = re.finditer(r'([\d\.,]+)\s*[₺|TL]', response.text)
+            m = re.finditer(r'\b([1-9][\d\.,]*)\s*(?:₺|TL|tl)\b', response.text, re.IGNORECASE)
             matches = list(m)
             if not matches:
-                m = re.finditer(r'[₺|TL]\s*([\d\.,]+)', response.text)
+                m = re.finditer(r'\b(?:₺|TL|tl)\s*([1-9][\d\.,]*)\b', response.text, re.IGNORECASE)
                 matches = list(m)
             
             if matches:
