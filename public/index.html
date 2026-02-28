@@ -262,7 +262,7 @@
         .card-img-wrapper {
             width: 100%;
             height: 220px;
-            background: rgba(255, 255, 255, 0.02);
+            background: #1E1E1E;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -273,8 +273,8 @@
         }
 
         .card-img {
-            max-width: 100%;
-            max-height: 100%;
+            width: 100%;
+            height: 180px;
             object-fit: contain;
             transition: transform 0.5s ease;
             border-radius: 10px;
@@ -459,14 +459,14 @@
 
         .landing-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.4), 0 0 15px rgba(255,179,0,0.05);
-            border-color: rgba(255,179,0,0.2);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4), 0 0 15px rgba(255, 179, 0, 0.05);
+            border-color: rgba(255, 179, 0, 0.2);
         }
 
         .l-icon {
             font-size: 48px;
             margin-bottom: 20px;
-            text-shadow: 0 0 20px rgba(255,179,0,0.3);
+            text-shadow: 0 0 20px rgba(255, 179, 0, 0.3);
             display: inline-block;
         }
 
@@ -560,17 +560,20 @@
             <div class="landing-card">
                 <div class="l-icon">⚡</div>
                 <h3>Işık Hızında Tarama</h3>
-                <p>Parça kodunu veya adını girin; sistemimiz Türkiye'nin en büyük yedek parça ağlarını eşzamanlı olarak tarasın.</p>
+                <p>Parça kodunu veya adını girin; sistemimiz Türkiye'nin en büyük yedek parça ağlarını eşzamanlı olarak
+                    tarasın.</p>
             </div>
             <div class="landing-card">
                 <div class="l-icon">🎯</div>
                 <h3>En Ucuzu Yakala</h3>
-                <p>Geliştirdiğimiz algoritma, en uygun fiyatlı ürünü sizin için mercek altına alır ve EN UCUZ etiketiyle sunar.</p>
+                <p>Geliştirdiğimiz algoritma, en uygun fiyatlı ürünü sizin için mercek altına alır ve EN UCUZ etiketiyle
+                    sunar.</p>
             </div>
             <div class="landing-card">
                 <div class="l-icon">🛡️</div>
                 <h3>Profesyonel Filtre</h3>
-                <p>Bozuk verileri ve alakasız ürünleri otomatik eler. Sadece güvenilir stoklara sahip satıcılar listelenir.</p>
+                <p>Bozuk verileri ve alakasız ürünleri otomatik eler. Sadece güvenilir stoklara sahip satıcılar
+                    listelenir.</p>
             </div>
         </div>
 
@@ -665,13 +668,13 @@
 
                 // İmaj var mı? Yoksa veya hatalıysa Fallback Logo göster
                 const hasImg = item.image_url && item.image_url.length > 5;
-                const fallbackHTML = `<div class="fallback-logo" style="color: rgba(255,255,255,0.05); font-size: 64px; transform: none; display: flex; align-items: center; justify-content: center; height: 100%;">⚙️</div>`;
+                const fallbackURL = "https://via.placeholder.com/150/1E1E1E/FFB300?text=Gorsel+Yok";
 
                 // Onerror event ile imaj kırık çıkarsa fallback'i bas
-                let imgHTML = fallbackHTML;
+                let imgHTML = `<img src="${fallbackURL}" alt="Gorsel Yok" class="card-img" loading="lazy">`;
                 if (isSuccess && hasImg) {
                     const safeUrl = item.image_url.replace(/"/g, '&quot;');
-                    imgHTML = `<img src="${safeUrl}" alt="${vendorName} Urunu" class="card-img" loading="lazy" onerror="this.outerHTML='<div class=\\'fallback-logo\\' style=\\'color: rgba(255,255,255,0.05); font-size: 64px; transform: none; display: flex; align-items: center; justify-content: center; height: 100%;\\'>⚙️</div>'">`;
+                    imgHTML = `<img src="${safeUrl}" alt="${vendorName} Urunu" class="card-img" loading="lazy" onerror="this.src='${fallbackURL}'">`;
                 }
 
                 const cardClasses = `card ${isCheapest ? 'cheapest' : ''} ${!isSuccess ? 'error-card' : ''}`;

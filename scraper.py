@@ -30,7 +30,7 @@ class SearchResult:
     error_msg    : str         = ""
     affiliate_url: str         = ""
     engine       : str         = "Stealth"
-    image_url    : str         = ""
+    image_url    : str         = "https://via.placeholder.com/150/1E1E1E/FFB300?text=Gorsel+Yok"
 
 @dataclass
 class SiteConfig:
@@ -225,10 +225,13 @@ async def _scrape_one(cfg: SiteConfig, query: str, dyn_headers: dict, use_httpx:
                                 elif isinstance(offers, list) and offers: price = offers[0].get('price')
                                 
                                 img_data = item.get('image', '')
-                                if isinstance(img_data, str): image_url = img_data
+                                if isinstance(img_data, str) and img_data: image_url = img_data
                                 elif isinstance(img_data, list) and img_data:
                                     image_url = img_data[0] if isinstance(img_data[0], str) else img_data[0].get('url', '')
                                 elif isinstance(img_data, dict): image_url = img_data.get('url', '')
+
+                                if not image_url:
+                                    image_url = "https://via.placeholder.com/150/1E1E1E/FFB300?text=Gorsel+Yok"
 
                                 if price:
                                     s_price_str = f"{price} ₺"
@@ -274,6 +277,9 @@ async def _scrape_one(cfg: SiteConfig, query: str, dyn_headers: dict, use_httpx:
                                         img_url = img_list[0].get('url', '') if isinstance(img_list[0], dict) else img_list[0]
                                     elif p.get('image'): 
                                         img_url = str(p.get('image'))
+                                        
+                                    if not img_url:
+                                        img_url = "https://via.placeholder.com/150/1E1E1E/FFB300?text=Gorsel+Yok"
 
                                     hb_results.append(SearchResult(cfg.name, True, part_name=name, price_str=p_str, price_numeric=p_num, url=p_url or url, affiliate_url=generate_affiliate_url(p_url or url), image_url=img_url))
                             except: continue
@@ -295,6 +301,8 @@ async def _scrape_one(cfg: SiteConfig, query: str, dyn_headers: dict, use_httpx:
                     if title and price_num and price_num > 50:
                         cl_url = f"https://www.sahibinden.com{cl.get('url')}"
                         img_url = cl.get('thumbnailUrl', '') or cl.get('thumbnailUrl1', '')
+                        if not img_url:
+                            img_url = "https://via.placeholder.com/150/1E1E1E/FFB300?text=Gorsel+Yok"
                         shb_results.append(SearchResult(cfg.name, True, part_name=title, price_str=price_str, price_numeric=price_num, url=cl_url, affiliate_url=generate_affiliate_url(cl_url), image_url=img_url))
                 if shb_results:
                     return shb_results[:3]
@@ -362,9 +370,16 @@ async def _scrape_one(cfg: SiteConfig, query: str, dyn_headers: dict, use_httpx:
             if cfg.image_sel:
                 img_el = safe_select(item, cfg.image_sel)
                 if img_el:
-                    image_url = img_el.get('data-original') or img_el.get('data-src') or img_el.get('src') or ""
+                    image_url = img_el.get('data-original') or img_el.get('data-src') or img_el.get('data-image') or img_el.get('src') or ""
+                    
+                    if not image_url and img_el.get('srcset'):
+                        image_url = img_el.get('srcset').split(',')[0].strip().split(' ')[0]
+                        
                     if image_url and image_url.startswith('//'):
                         image_url = "https:" + image_url
+            
+            if not image_url:
+                image_url = "https://via.placeholder.com/150/1E1E1E/FFB300?text=Gorsel+Yok"
 
             results_list.append(SearchResult(
                 site_name     = cfg.name,
